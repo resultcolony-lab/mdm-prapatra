@@ -1,0 +1,6 @@
+{
+  "name": "Bihar PM POSHAN (MDM) Report & Calculation System",
+  "description": "बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण योजना (MDM) प्रपत्र-क मासिक प्रगति प्रतिवेदन एवं स्वचालित गणना प्रणाली",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
