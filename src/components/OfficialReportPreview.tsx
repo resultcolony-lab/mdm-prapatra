@@ -17,6 +17,16 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
   const rates = data.customRates || OFFICIAL_DEFAULT_RATES;
   const calc = calculatePrapatraRows(data, rates);
 
+  const has6to8Data = Boolean(
+    (calc.row6to8.col11_beneficiaryDays && calc.row6to8.col11_beneficiaryDays > 0) ||
+    (schoolDetails.enroll6to8 != null && schoolDetails.enroll6to8 > 0) ||
+    (schoolDetails.overrideStudentDays6to8 != null && schoolDetails.overrideStudentDays6to8 > 0) ||
+    (calc.row6to8.col5_currentLifting && calc.row6to8.col5_currentLifting > 0) ||
+    (calc.row6to8.col7_prevBalanceRice && calc.row6to8.col7_prevBalanceRice > 0) ||
+    (calc.row6to8.col19_totalExp && calc.row6to8.col19_totalExp > 0) ||
+    (calc.row6to8.col9_consumedRice && calc.row6to8.col9_consumedRice > 0)
+  );
+
   const printAreaRef = useRef<HTMLDivElement>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
@@ -50,6 +60,16 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const formatValKg = (val: number | undefined | null) => {
+    if (val === undefined || val === null || val <= 0) return '-';
+    return formatKg(val);
+  };
+
+  const formatValINR = (val: number | undefined | null) => {
+    if (val === undefined || val === null || val <= 0) return '-';
+    return formatINR(val);
   };
 
   const handleDownloadDirectPdf = async () => {
@@ -92,14 +112,26 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
           .report-page-container {
             width: 100% !important;
             max-width: 100% !important;
-            height: auto !important;
+            height: 100vh !important;
+            min-height: 100vh !important;
             margin: 0 !important;
             padding: 3mm 4mm !important;
             box-shadow: none !important;
             border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
             page-break-after: avoid !important;
             break-after: avoid !important;
           }
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
         }
       `}</style>
 
@@ -208,11 +240,15 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
           <div
             ref={printAreaRef}
             id="official-prapatra-k"
-            className="report-page-container bg-white text-black p-6 rounded-sm shadow-xl border border-slate-300"
+            className="report-page-container bg-white text-black rounded-sm shadow-xl border border-slate-300"
             style={{
-              width: '1120px',
-              minHeight: '760px',
+              width: '1140px',
+              minHeight: '796px',
+              padding: '18px 20px',
               boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
               fontFamily: "'Noto Sans Devanagari', 'Mangal', 'Arial', sans-serif",
             }}
           >
@@ -258,7 +294,9 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                     <button
                       type="button"
                       onClick={() => handleAutoTranslate('blockName', schoolDetails.blockName)}
-                      className="no-print ml-1 text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                      className="no-print translate-helper-btn ml-1 text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                      data-no-print="true"
+                      data-translate-btn="true"
                       title="हिन्दी में अनुवाद करें"
                     >
                       हिन्दी
@@ -286,7 +324,9 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                   <button
                     type="button"
                     onClick={() => handleAutoTranslate('schoolName', schoolDetails.schoolName)}
-                    className="no-print ml-1 text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                    className="no-print translate-helper-btn ml-1 text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                    data-no-print="true"
+                    data-translate-btn="true"
                     title="हिन्दी में अनुवाद करें"
                   >
                     हिन्दी
@@ -331,55 +371,91 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
             {/* 3. The 24-Column Official Table */}
             <div className="w-full">
               <table
-                className="gov-report-table w-full border-collapse border border-black text-black text-center"
-                style={{ fontSize: '8.5px', lineHeight: '1.15' }}
+                className="gov-report-table w-full border-collapse border-2 border-black text-black text-center table-fixed"
+                style={{ fontSize: '8.8px', lineHeight: '1.15', tableLayout: 'fixed', width: '100%' }}
               >
+                <colgroup>
+                  <col style={{ width: '2.6%' }} /> {/* 1. क्र० सं० */}
+                  <col style={{ width: '5.4%' }} /> {/* 2. कक्षा (1-8) */}
+                  <col style={{ width: '4.3%' }} /> {/* 3. आवंटन */}
+                  <col style={{ width: '4.2%' }} /> {/* 4. गत उठाव */}
+                  <col style={{ width: '4.2%' }} /> {/* 5. वर्तमान उठाव */}
+                  <col style={{ width: '4.4%' }} /> {/* 6. कुल उठाव */}
+                  <col style={{ width: '4.4%' }} /> {/* 7. पूर्व अवशेष */}
+                  <col style={{ width: '4.4%' }} /> {/* 8. कुल उपलब्ध */}
+                  <col style={{ width: '4.4%' }} /> {/* 9. उपयोग */}
+                  <col style={{ width: '4.4%' }} /> {/* 10. अवशेष */}
+                  <col style={{ width: '4.4%' }} /> {/* 11. लाभान्वित */}
+                  <col style={{ width: '4.3%' }} /> {/* 12. लिमिट प्राप्त */}
+                  <col style={{ width: '4.3%' }} /> {/* 13. PFMS अवशेष */}
+                  <col style={{ width: '4.1%' }} /> {/* 14. दाल */}
+                  <col style={{ width: '4.1%' }} /> {/* 15. मसाला */}
+                  <col style={{ width: '4.1%' }} /> {/* 16. सब्जी */}
+                  <col style={{ width: '4.1%' }} /> {/* 17. तेल */}
+                  <col style={{ width: '4.1%' }} /> {/* 18. जलावन */}
+                  <col style={{ width: '4.6%' }} /> {/* 19. कुल व्यय */}
+                  <col style={{ width: '3.4%' }} /> {/* 20. कार्य दिवस */}
+                  <col style={{ width: '3.6%' }} /> {/* 21. MDM दिवस */}
+                  <col style={{ width: '3.6%' }} /> {/* 22. औसत लाभान्वित */}
+                  <col style={{ width: '3.6%' }} /> {/* 23. नामांकन */}
+                  <col style={{ width: '4.4%' }} /> {/* 24. अभ्युक्ति */}
+                </colgroup>
                 <thead>
-                  {/* Top Category Header Row */}
-                  <tr className="bg-slate-100 font-bold">
-                    <th className="border border-black p-1 w-6" rowSpan={2}>क्र० सं०</th>
-                    <th className="border border-black p-1 w-14" rowSpan={2}>कक्षा (1-8)</th>
-                    <th className="border border-black p-1 text-center" colSpan={9}>
-                      भौतिक प्रतिवेदन
+                  {/* Top Category Header Row (Row 1) */}
+                  <tr className="text-black font-extrabold text-[9px] leading-tight" style={{ height: '24px' }}>
+                    <th className="border border-black border-b-0 p-0.5 text-center font-extrabold bg-slate-200 align-bottom">क्र०</th>
+                    <th className="border border-black border-b-0 p-0.5 text-center font-extrabold bg-slate-200 align-bottom">कक्षा</th>
+                    <th className="border border-black p-0.5 text-center text-[10px] font-extrabold bg-slate-200" colSpan={9}>
+                      भौतिक प्रतिवेदन (खाद्यान्न - kg)
                     </th>
-                    <th className="border border-black p-1 text-center" colSpan={8}>
-                      वित्तीय प्रतिवेदन
+                    <th className="border border-black p-0.5 text-center text-[10px] font-extrabold bg-slate-200" colSpan={8}>
+                      वित्तीय प्रतिवेदन (परिवर्तन लागत राशि - ₹)
                     </th>
-                    <th className="border border-black p-1 w-10" rowSpan={2}>कार्य दिवस</th>
-                    <th className="border border-black p-1 w-12" rowSpan={2}>मध्याह्न भोजन कार्य दिवस</th>
-                    <th className="border border-black p-1 w-10" rowSpan={2}>औसत लाभान्वित</th>
-                    <th className="border border-black p-1 w-10" rowSpan={2}>नामांकन</th>
-                    <th className="border border-black p-1 w-14" rowSpan={2}>अभ्युक्ति</th>
+                    <th className="border border-black border-b-0 p-0.5 text-[8.5px] text-center font-extrabold bg-slate-200 align-bottom">कार्य</th>
+                    <th className="border border-black border-b-0 p-0.5 text-[8.5px] text-center font-extrabold bg-slate-200 align-bottom">MDM</th>
+                    <th className="border border-black border-b-0 p-0.5 text-[8.5px] text-center font-extrabold bg-slate-200 align-bottom">औसत</th>
+                    <th className="border border-black border-b-0 p-0.5 text-[8.5px] text-center font-extrabold bg-slate-200 align-bottom">छात्र</th>
+                    <th className="border border-black border-b-0 p-0.5 text-[8.5px] text-center font-extrabold bg-slate-200 align-bottom">विशेष</th>
                   </tr>
 
-                  {/* Second Detailed Header Row (24 exact columns) */}
-                  <tr className="bg-slate-50 font-bold align-bottom">
+                  {/* Second Detailed Header Row (Row 2: 24 exact columns) */}
+                  <tr className="text-black font-bold align-bottom text-[8px] leading-[1.12]" style={{ height: '36px' }}>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[9px]">सं०</th>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[9px]">(1-8)</th>
+
                     {/* Col 3 to 11 (भौतिक) */}
-                    <th className="border border-black p-1 w-12 font-medium">वित्तीय वर्ष में खाद्यान्न का आवंटन</th>
-                    <th className="border border-black p-1 w-10 font-medium">गत माह तक उठाव</th>
-                    <th className="border border-black p-1 w-10 font-medium">वर्तमान माह में उठाव</th>
-                    <th className="border border-black p-1 w-11 font-semibold">कुल उठाव 4+5=6</th>
-                    <th className="border border-black p-1 w-14 font-medium">विद्यालय में पूर्व माह तक का अवशेष खाद्यान्न (किलोग्राम में)</th>
-                    <th className="border border-black p-1 w-14 font-semibold">विद्यालय में वर्तमान माह में कुल खाद्यान्न (किलोग्राम) 5+7=8</th>
-                    <th className="border border-black p-1 w-14 font-medium">विद्यालय द्वारा माह में उपयोग की गई कुल खाद्यान्न (किलोग्राम)</th>
-                    <th className="border border-black p-1 w-12 font-semibold">अवशेष खाद्यान्न (किलोग्राम) 8-9=10</th>
-                    <th className="border border-black p-1 w-12 font-semibold">लाभान्वित छात्र / छात्राओं की संख्या</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">खाद्यान्न आवंटन</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">गत माह उठाव</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">वर्तमान उठाव</th>
+                    <th className="border border-black px-0.5 py-1 font-extrabold break-words bg-slate-50">कुल उठाव 4+5=6</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">पूर्व माह अवशेष (kg)</th>
+                    <th className="border border-black px-0.5 py-1 font-extrabold break-words bg-slate-50">कुल उपलब्ध 5+7=8</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">उपयोग खाद्यान्न</th>
+                    <th className="border border-black px-0.5 py-1 font-extrabold break-words bg-slate-50">अवशेष 8-9=10</th>
+                    <th className="border border-black px-0.5 py-1 font-extrabold break-words bg-slate-50">लाभान्वित छात्र संख्या</th>
 
                     {/* Col 12 to 19 (वित्तीय) */}
-                    <th className="border border-black p-1 w-12 font-medium">विद्यालय को प्राप्त लिमिट राशि</th>
-                    <th className="border border-black p-1 w-12 font-medium">वर्तमान में PFMS में अवशेष राशि</th>
-                    <th className="border border-black p-1 w-11 font-medium">दाल क्रय मद में व्यय की गयी राशि</th>
-                    <th className="border border-black p-1 w-11 font-medium">नमक एवं मसाला मद में व्यय की गयी राशि</th>
-                    <th className="border border-black p-1 w-11 font-medium">सब्जी मद में व्यय की गयी राशि</th>
-                    <th className="border border-black p-1 w-11 font-medium">तेल मद में व्यय की गयी राशि</th>
-                    <th className="border border-black p-1 w-12 font-medium">जलावन अथवा गैस मद में व्यय की गयी राशि</th>
-                    <th className="border border-black p-1 w-12 font-bold">कुल व्यय की गयी राशि</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">प्राप्त लिमिट राशि</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">PFMS अवशेष राशि</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">दाल क्रय व्यय</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">नमक मसाला व्यय</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">सब्जी मद व्यय</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">तेल मद व्यय</th>
+                    <th className="border border-black px-0.5 py-1 font-bold break-words bg-slate-50">जलावन / गैस व्यय</th>
+                    <th className="border border-black px-0.5 py-1 font-extrabold break-words bg-slate-50">कुल व्यय राशि</th>
+
+                    {/* Col 20 to 24 */}
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[8.5px]">दिवस</th>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[8.5px]">दिवस</th>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[8.5px]">लाभान्वित</th>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[8.5px]">नामांकन</th>
+                    <th className="border border-black border-t-0 p-0.5 text-center font-extrabold bg-slate-200 align-top text-[8.5px]">अभ्युक्ति</th>
                   </tr>
 
                   {/* Third Row: Column Numbers 1 to 24 */}
-                  <tr className="bg-slate-200/90 font-bold text-[8px]">
+                  <tr className="bg-slate-200 text-black font-extrabold text-[8px]" style={{ height: '18px' }}>
                     {Array.from({ length: 24 }, (_, i) => (
-                      <th key={i + 1} className="border border-black p-0.5">
+                      <th key={i + 1} className="border border-black p-0.5 font-extrabold">
                         {i + 1}
                       </th>
                     ))}
@@ -388,22 +464,23 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
 
                 <tbody>
                   {/* Row 1: कक्षा 1-5 */}
-                  <tr className="hover:bg-slate-50 transition">
-                    <td className="border border-black p-1.5 font-bold">{calc.row1to5.sNo}</td>
-                    <td className="border border-black p-1.5 font-bold whitespace-nowrap">{calc.row1to5.className}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row1to5.col3_annualAllotment)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row1to5.col4_prevLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row1to5.col5_currentLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-semibold">{formatKg(calc.row1to5.col6_totalLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row1to5.col7_prevBalanceRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-semibold">{formatKg(calc.row1to5.col8_totalAvailableRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold">{formatKg(calc.row1to5.col9_consumedRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold">{formatKg(calc.row1to5.col10_closingBalanceRice)}</td>
-                    <td className="border border-black p-0.5 font-mono font-bold text-center bg-amber-50/70">
+                  <tr className="hover:bg-slate-50 transition" style={{ height: '42px' }}>
+                    <td className="border border-black px-0.5 py-1 font-bold align-middle">{calc.row1to5.sNo}</td>
+                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.row1to5.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col3_annualAllotment)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col4_prevLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col5_currentLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col6_totalLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col7_prevBalanceRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col8_totalAvailableRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col9_consumedRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col8_totalAvailableRice > 0 ? formatValKg(calc.row1to5.col10_closingBalanceRice) : '-'}</td>
+                    <td className="border border-black p-0 font-mono font-bold text-center bg-amber-50/70 overflow-hidden align-middle">
                       <input
                         type="number"
                         min="0"
-                        value={schoolDetails.overrideStudentDays1to5 ?? calc.row1to5.col11_beneficiaryDays}
+                        value={schoolDetails.overrideStudentDays1to5 ?? (calc.row1to5.col11_beneficiaryDays > 0 ? calc.row1to5.col11_beneficiaryDays : '')}
+                        placeholder="-"
                         onChange={(e) => {
                           const val = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0);
                           onUpdateSchoolDetails?.({ ...schoolDetails, overrideStudentDays1to5: val });
@@ -412,147 +489,156 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                         title="कॉलम 11 (कुल विद्यार्थी-दिवस 1-5): सीधे एडिट करें"
                       />
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.row1to5.col12_pfmsLimitReceived != null ? formatINR(calc.row1to5.col12_pfmsLimitReceived) : ''}
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {calc.row1to5.col12_pfmsLimitReceived != null && calc.row1to5.col12_pfmsLimitReceived > 0 ? formatINR(calc.row1to5.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.row1to5.col13_pfmsBalanceAmount != null ? formatINR(calc.row1to5.col13_pfmsBalanceAmount) : ''}
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {calc.row1to5.col13_pfmsBalanceAmount != null && calc.row1to5.col13_pfmsBalanceAmount > 0 ? formatINR(calc.row1to5.col13_pfmsBalanceAmount) : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row1to5.col14_dalExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row1to5.col15_masalaExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row1to5.col16_sabjiExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row1to5.col17_telExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row1to5.col18_jalawanExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold bg-blue-50/60">{formatINR(calc.row1to5.col19_totalExp)}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.row1to5.col20_schoolWorkingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-bold">{calc.row1to5.col21_mdmServingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-bold">{calc.row1to5.col22_avgBeneficiaries}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-semibold">{calc.row1to5.col23_enrollment || ''}</td>
-                    <td className="border border-black p-1 text-[8px] text-center">{calc.row1to5.col24_remarks}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col14_dalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col15_masalaExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col16_sabjiExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col17_telExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col18_jalawanExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col19_totalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col20_schoolWorkingDays > 0 ? calc.row1to5.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col21_mdmServingDays > 0 ? calc.row1to5.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col22_avgBeneficiaries > 0 ? calc.row1to5.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col23_enrollment > 0 ? calc.row1to5.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-[8px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col24_remarks || '-'}</td>
                   </tr>
 
                   {/* Row 2: कक्षा 6-8 */}
-                  <tr className="hover:bg-slate-50 transition">
-                    <td className="border border-black p-1.5 font-bold">{calc.row6to8.sNo}</td>
-                    <td className="border border-black p-1.5 font-bold whitespace-nowrap">{calc.row6to8.className}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row6to8.col3_annualAllotment)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row6to8.col4_prevLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row6to8.col5_currentLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-semibold">{formatKg(calc.row6to8.col6_totalLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.row6to8.col7_prevBalanceRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-semibold">{formatKg(calc.row6to8.col8_totalAvailableRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold">{formatKg(calc.row6to8.col9_consumedRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold">{formatKg(calc.row6to8.col10_closingBalanceRice)}</td>
-                    <td className="border border-black p-0.5 font-mono font-bold text-center bg-amber-50/70">
-                      <input
-                        type="number"
-                        min="0"
-                        value={schoolDetails.overrideStudentDays6to8 ?? calc.row6to8.col11_beneficiaryDays}
-                        onChange={(e) => {
-                          const val = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0);
-                          onUpdateSchoolDetails?.({ ...schoolDetails, overrideStudentDays6to8: val });
-                        }}
-                        className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[9.5px] py-0.5"
-                        title="कॉलम 11 (कुल विद्यार्थी-दिवस 6-8): सीधे एडिट करें"
-                      />
+                  <tr className="hover:bg-slate-50 transition" style={{ height: '42px' }}>
+                    <td className="border border-black px-0.5 py-1 font-bold align-middle">{calc.row6to8.sNo}</td>
+                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.row6to8.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col3_annualAllotment) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col4_prevLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col5_currentLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col6_totalLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col7_prevBalanceRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col8_totalAvailableRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col9_consumedRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col8_totalAvailableRice > 0 ? formatValKg(calc.row6to8.col10_closingBalanceRice) : '-'}</td>
+                    <td className="border border-black p-0 font-mono font-bold text-center bg-amber-50/70 overflow-hidden align-middle">
+                      {has6to8Data ? (
+                        <input
+                          type="number"
+                          min="0"
+                          value={schoolDetails.overrideStudentDays6to8 ?? (calc.row6to8.col11_beneficiaryDays > 0 ? calc.row6to8.col11_beneficiaryDays : '')}
+                          placeholder="-"
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0);
+                            onUpdateSchoolDetails?.({ ...schoolDetails, overrideStudentDays6to8: val });
+                          }}
+                          className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[9.5px] py-0.5"
+                          title="कॉलम 11 (कुल विद्यार्थी-दिवस 6-8): सीधे एडिट करें"
+                        />
+                      ) : (
+                        <span className="text-slate-600 font-bold">-</span>
+                      )}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.row6to8.col12_pfmsLimitReceived != null ? formatINR(calc.row6to8.col12_pfmsLimitReceived) : ''}
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {has6to8Data && calc.row6to8.col12_pfmsLimitReceived != null && calc.row6to8.col12_pfmsLimitReceived > 0 ? formatINR(calc.row6to8.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.row6to8.col13_pfmsBalanceAmount != null ? formatINR(calc.row6to8.col13_pfmsBalanceAmount) : ''}
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {has6to8Data && calc.row6to8.col13_pfmsBalanceAmount != null && calc.row6to8.col13_pfmsBalanceAmount > 0 ? formatINR(calc.row6to8.col13_pfmsBalanceAmount) : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row6to8.col14_dalExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row6to8.col15_masalaExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row6to8.col16_sabjiExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row6to8.col17_telExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.row6to8.col18_jalawanExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono font-bold bg-blue-50/60">{formatINR(calc.row6to8.col19_totalExp)}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.row6to8.col20_schoolWorkingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-bold">{calc.row6to8.col21_mdmServingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-bold">{calc.row6to8.col22_avgBeneficiaries}</td>
-                    <td className="border border-black p-1.5 font-mono text-center font-semibold">{calc.row6to8.col23_enrollment || ''}</td>
-                    <td className="border border-black p-1 text-[8px] text-center">{calc.row6to8.col24_remarks}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col14_dalExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col15_masalaExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col16_sabjiExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col17_telExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col18_jalawanExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col19_totalExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col20_schoolWorkingDays > 0 ? calc.row6to8.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col21_mdmServingDays > 0 ? calc.row6to8.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col22_avgBeneficiaries > 0 ? calc.row6to8.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col23_enrollment > 0 ? calc.row6to8.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-[8px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col24_remarks ? calc.row6to8.col24_remarks : '-'}</td>
                   </tr>
 
                   {/* Row 3: कुल योग */}
-                  <tr className="bg-slate-100 font-extrabold border-t-2 border-black">
-                    <td className="border border-black p-1.5"></td>
-                    <td className="border border-black p-1.5 font-extrabold whitespace-nowrap">{calc.totalRow.className}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col3_annualAllotment)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col4_prevLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col5_currentLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col6_totalLifting)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col7_prevBalanceRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col8_totalAvailableRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col9_consumedRice)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatKg(calc.totalRow.col10_closingBalanceRice)}</td>
-                    <td className="border border-black p-1.5 font-mono text-center bg-amber-100">{calc.totalRow.col11_beneficiaryDays}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.totalRow.col12_pfmsLimitReceived != null ? formatINR(calc.totalRow.col12_pfmsLimitReceived) : ''}
+                  <tr className="bg-slate-100 font-extrabold border-t-2 border-black" style={{ height: '44px' }}>
+                    <td className="border border-black px-0.5 py-1 font-bold align-middle text-center">-</td>
+                    <td className="border border-black px-0.5 py-1 font-extrabold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.totalRow.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col3_annualAllotment)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col4_prevLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col5_currentLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col6_totalLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col7_prevBalanceRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col8_totalAvailableRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col9_consumedRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col8_totalAvailableRice > 0 ? formatValKg(calc.totalRow.col10_closingBalanceRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center bg-amber-100 text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
+                      {calc.totalRow.col11_beneficiaryDays > 0 ? calc.totalRow.col11_beneficiaryDays : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">
-                      {calc.totalRow.col13_pfmsBalanceAmount != null ? formatINR(calc.totalRow.col13_pfmsBalanceAmount) : ''}
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {calc.totalRow.col12_pfmsLimitReceived != null && calc.totalRow.col12_pfmsLimitReceived > 0 ? formatINR(calc.totalRow.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.totalRow.col14_dalExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.totalRow.col15_masalaExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.totalRow.col16_sabjiExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.totalRow.col17_telExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono">{formatINR(calc.totalRow.col18_jalawanExp)}</td>
-                    <td className="border border-black p-1.5 text-right font-mono bg-blue-100 text-[9.5px]">{formatINR(calc.totalRow.col19_totalExp)}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.totalRow.col20_schoolWorkingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.totalRow.col21_mdmServingDays}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.totalRow.col22_avgBeneficiaries}</td>
-                    <td className="border border-black p-1.5 font-mono text-center">{calc.totalRow.col23_enrollment || ''}</td>
-                    <td className="border border-black p-1"></td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                      {calc.totalRow.col13_pfmsBalanceAmount != null && calc.totalRow.col13_pfmsBalanceAmount > 0 ? formatINR(calc.totalRow.col13_pfmsBalanceAmount) : '-'}
+                    </td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col14_dalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col15_masalaExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col16_sabjiExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col17_telExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col18_jalawanExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-extrabold text-[9.5px] bg-blue-100 text-black overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col19_totalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col20_schoolWorkingDays > 0 ? calc.totalRow.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col21_mdmServingDays > 0 ? calc.totalRow.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col22_avgBeneficiaries > 0 ? calc.totalRow.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col23_enrollment > 0 ? calc.totalRow.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-center font-bold text-[8px] align-middle">-</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* 4. Official Certification Note */}
-            <div className="mt-2 text-[10px] font-semibold text-black leading-tight">
-              नोट:- प्रमाणित किया जाता है कि वित्तीय, विद्यालय में संधारित एवं उपलब्ध पोषाहार पंजी के आधार पर तैयार की गई है जो पूर्णरूपेण सही है।
-            </div>
+            {/* 4. Official Certification Note & Signatures (Full Page Bottom Anchored) */}
+            <div className="mt-auto pt-4">
+              <div className="text-[10.5px] font-semibold text-black leading-tight mb-3">
+                नोट:- प्रमाणित किया जाता है कि वित्तीय, विद्यालय में संधारित एवं उपलब्ध पोषाहार पंजी के आधार पर तैयार की गई है जो पूर्णरूपेण सही है।
+              </div>
 
-            {/* 5. Official Signatures Section */}
-            <div className="mt-10 flex justify-between items-end text-[11px] font-bold text-black px-4">
-              <div className="text-center">
-                <div className="h-6"></div>
-                <div>वि० शि० समिति / प्रबंध समिति</div>
-                <div>अध्यक्ष / सचिव का हस्ताक्षर एवं मोहर</div>
-                <div className="mt-0.5">
+              {/* 5. Official Signatures Section */}
+              <div className="flex justify-between items-end text-[11.5px] font-bold text-black px-6 pb-2">
+                <div className="text-center">
+                  <div className="h-14"></div>
+                  <div>वि० शि० समिति / प्रबंध समिति</div>
+                  <div>अध्यक्ष / सचिव का हस्ताक्षर एवं मोहर</div>
+                  <div className="mt-1">
+                    <input
+                      type="text"
+                      value={schoolDetails.smcSecretaryName}
+                      onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, smcSecretaryName: e.target.value })}
+                      placeholder="(अध्यक्ष/सचिव का नाम)"
+                      className="text-[10px] text-center border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden text-slate-800 w-48"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-center font-bold text-[13px] pb-1">
                   <input
                     type="text"
-                    value={schoolDetails.smcSecretaryName}
-                    onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, smcSecretaryName: e.target.value })}
-                    placeholder="(अध्यक्ष/सचिव का नाम)"
-                    className="text-[10px] text-center border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden text-slate-800 w-48"
+                    value={schoolDetails.districtName || 'पूर्णियाँ'}
+                    onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, districtName: e.target.value })}
+                    placeholder="पूर्णियाँ"
+                    className="text-center font-bold text-[13px] border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden min-w-[140px] px-1"
                   />
                 </div>
-              </div>
 
-              <div className="text-center font-bold text-[13px]">
-                <input
-                  type="text"
-                  value={schoolDetails.districtName || 'पूर्णियाँ'}
-                  onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, districtName: e.target.value })}
-                  placeholder="पूर्णियाँ"
-                  className="text-center font-bold text-[13px] border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden min-w-[140px] px-1"
-                />
-              </div>
-
-              <div className="text-center">
-                <div className="h-6"></div>
-                <div>प्रभारी प्रधानाध्यापक / प्रधानाध्यापक का हस्ताक्षर एवं मोहर</div>
-                <div className="mt-0.5">
-                  <input
-                    type="text"
-                    value={schoolDetails.hmName}
-                    onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, hmName: e.target.value })}
-                    placeholder="(प्रधानाध्यापक का नाम)"
-                    className="text-[10px] text-center border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden text-slate-800 w-48"
-                  />
+                <div className="text-center">
+                  <div className="h-14"></div>
+                  <div>प्रभारी प्रधानाध्यापक / प्रधानाध्यापक का हस्ताक्षर एवं मोहर</div>
+                  <div className="mt-1">
+                    <input
+                      type="text"
+                      value={schoolDetails.hmName}
+                      onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, hmName: e.target.value })}
+                      placeholder="(प्रधानाध्यापक का नाम)"
+                      className="text-[10px] text-center border-b border-dotted border-black bg-transparent focus:bg-amber-50 focus:outline-hidden text-slate-800 w-48"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

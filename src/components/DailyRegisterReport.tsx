@@ -141,24 +141,30 @@ export const DailyRegisterReport: React.FC<Props> = ({ data }) => {
           <table className="w-full text-[9px] border-collapse border border-black text-center">
             <thead className="bg-slate-100 font-bold">
               <tr>
-                <th className="border border-black p-1 w-8" rowSpan={2}>दिनांक</th>
-                <th className="border border-black p-1 w-12" rowSpan={2}>दिन</th>
-                <th className="border border-black p-1 w-16" rowSpan={2}>स्थिति</th>
+                <th className="border border-black border-b-0 p-1 w-8 align-bottom">दिनांक</th>
+                <th className="border border-black border-b-0 p-1 w-12 align-bottom">दिन</th>
+                <th className="border border-black border-b-0 p-1 w-16 align-bottom">स्थिति</th>
                 <th className="border border-black p-1 text-center" colSpan={3}>लाभान्वित छात्र</th>
-                <th className="border border-black p-1 w-14" rowSpan={2}>चावल (kg)</th>
+                <th className="border border-black border-b-0 p-1 w-14 align-bottom">चावल (kg)</th>
                 <th className="border border-black p-1 text-center" colSpan={5}>सामग्रीवार व्यय (₹)</th>
-                <th className="border border-black p-1 w-16" rowSpan={2}>कुल दैनिक व्यय (₹)</th>
-                <th className="border border-black p-1 w-20" rowSpan={2}>रसोइया / HM हस्ताक्षर</th>
+                <th className="border border-black border-b-0 p-1 w-16 align-bottom">कुल दैनिक व्यय (₹)</th>
+                <th className="border border-black border-b-0 p-1 w-20 align-bottom">रसोइया / HM हस्ताक्षर</th>
               </tr>
               <tr>
+                <th className="border border-black border-t-0 p-0.5 w-8"></th>
+                <th className="border border-black border-t-0 p-0.5 w-12"></th>
+                <th className="border border-black border-t-0 p-0.5 w-16"></th>
                 <th className="border border-black p-1 w-10">कक्षा 1-5</th>
                 <th className="border border-black p-1 w-10">कक्षा 6-8</th>
                 <th className="border border-black p-1 w-10">कुल छात्र</th>
+                <th className="border border-black border-t-0 p-0.5 w-14"></th>
                 <th className="border border-black p-1 w-11">दाल</th>
                 <th className="border border-black p-1 w-11">मसाला/नमक</th>
                 <th className="border border-black p-1 w-11">सब्जी</th>
                 <th className="border border-black p-1 w-11">तेल</th>
                 <th className="border border-black p-1 w-11">जलावन</th>
+                <th className="border border-black border-t-0 p-0.5 w-16"></th>
+                <th className="border border-black border-t-0 p-0.5 w-20"></th>
               </tr>
             </thead>
             <tbody>

@@ -22,7 +22,9 @@
     print-color-adjust: exact;
   }
 
-  .no-print {
+  .no-print,
+  .translate-helper-btn,
+  button {
     display: none !important;
   }
 

@@ -433,12 +433,16 @@ export default function App() {
 
       {/* Footer */}
       <footer className="no-print bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 mt-auto pb-20 md:pb-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div>
-            बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण (PM POSHAN) रिपोर्टिंग एवं स्वचालित लेखांकन प्रणाली
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="text-left">
+            <span className="font-medium text-slate-700">बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण (PM POSHAN) रिपोर्टिंग एवं स्वचालित लेखांकन प्रणाली</span>
+            <div className="font-mono text-[11px] text-slate-400 mt-0.5">
+              प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 सरकारी दर अनुपालन
+            </div>
           </div>
-          <div className="font-mono text-[11px] text-slate-400">
-            प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 सरकारी दर अनुपालन
+          <div className="flex items-center gap-1.5 text-xs bg-indigo-50/70 px-3 py-1.5 rounded-lg border border-indigo-200 shadow-2xs">
+            <span className="text-slate-600 font-medium">Credit:</span>
+            <span className="font-extrabold text-indigo-700 tracking-wider">KAUSTUBH</span>
           </div>
         </div>
       </footer>

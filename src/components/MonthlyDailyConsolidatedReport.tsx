@@ -283,14 +283,22 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                 मध्याह्न भोजन योजना अंतर्गत सम्पूर्ण माह का समेकित रिपोर्ट
               </h1>
 
-              <div className="mt-1 text-[13px] font-bold">
-                माह{' '}
+              <div className="mt-1 text-[13px] font-bold flex items-center justify-center gap-2">
+                <span>माह :</span>
                 <input
                   type="text"
                   value={schoolDetails.month}
                   onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, month: e.target.value })}
-                  placeholder="......................................."
-                  className="border-b border-dotted border-black px-1 font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden min-w-[150px]"
+                  placeholder="........................"
+                  className="border-b border-dotted border-black px-1 font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden min-w-[120px]"
+                />
+                <span className="ml-2">वर्ष :</span>
+                <input
+                  type="text"
+                  value={schoolDetails.year}
+                  onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, year: e.target.value })}
+                  placeholder="2025"
+                  className="border-b border-dotted border-black px-1 font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden w-20 font-mono"
                 />
               </div>
 
@@ -309,7 +317,9 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleTranslateField('schoolName')}
-                    className="no-print ml-1 text-[10px] text-indigo-700 hover:text-indigo-900 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200"
+                    className="no-print translate-helper-btn ml-1 text-[10px] text-indigo-700 hover:text-indigo-900 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200"
+                    data-no-print="true"
+                    data-translate-btn="true"
                     title="अंग्रेजी से शुद्ध हिन्दी में बदलें"
                   >
                     {translatingField === 'schoolName' ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : '🌐 हिन्दी'}
@@ -328,7 +338,9 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleTranslateField('blockName')}
-                    className="no-print ml-1 text-[10px] text-indigo-700 hover:text-indigo-900 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200"
+                    className="no-print translate-helper-btn ml-1 text-[10px] text-indigo-700 hover:text-indigo-900 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200"
+                    data-no-print="true"
+                    data-translate-btn="true"
                     title="अंग्रेजी से शुद्ध हिन्दी में बदलें"
                   >
                     {translatingField === 'blockName' ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : '🌐 हिन्दी'}
@@ -461,7 +473,7 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                 <span>मध्याह्न भोजन योजना अंतर्गत सम्पूर्ण माह का समेकित रिपोर्ट (पृष्ठ- 2)</span>
                 <span>
                   {schoolDetails.schoolName ? `${schoolDetails.schoolName} • ` : ''}
-                  माह: {schoolDetails.month || '---'} {schoolDetails.year || ''}
+                  माह: {schoolDetails.month || '---'} | वर्ष: {schoolDetails.year || '2025'}
                 </span>
               </div>
 

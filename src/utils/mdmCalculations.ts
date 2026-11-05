@@ -74,9 +74,9 @@ export function calculatePrapatraRows(
   const consumedRice1to5 = round2((studentDays1to5 * rates.class1to5.riceGramPerChild) / 1000);
   const consumedRice6to8 = round2((studentDays6to8 * rates.class6to8.riceGramPerChild) / 1000);
 
-  // Col 10 = Col 8 - Col 9
-  const closingRice1to5 = round2(col8_totalAvailable1to5 - consumedRice1to5);
-  const closingRice6to8 = round2(col8_totalAvailable6to8 - consumedRice6to8);
+  // Col 10 = Col 8 - Col 9 (Closing stock cannot be negative)
+  const closingRice1to5 = col8_totalAvailable1to5 > 0 ? round2(Math.max(0, col8_totalAvailable1to5 - consumedRice1to5)) : 0;
+  const closingRice6to8 = col8_totalAvailable6to8 > 0 ? round2(Math.max(0, col8_totalAvailable6to8 - consumedRice6to8)) : 0;
 
   if (consumedRice1to5 > col8_totalAvailable1to5 && col8_totalAvailable1to5 > 0) {
     warnings.push(`कक्षा 1-5: खाद्यान्न खपत (${consumedRice1to5} kg) कुल उपलब्ध खाद्यान्न (${col8_totalAvailable1to5} kg) से अधिक है!`);
@@ -102,6 +102,24 @@ export function calculatePrapatraRows(
   const jalawanExp6to8 = round2(studentDays6to8 * rates.class6to8.jalawan.costPerChild);
   const totalExp6to8 = round2(studentDays6to8 * rates.class6to8.totalCostPerChild);
 
+  const has1to5Data = Boolean(
+    studentDays1to5 > 0 ||
+    (schoolDetails.enroll1to5 && schoolDetails.enroll1to5 > 0) ||
+    (schoolDetails.overrideStudentDays1to5 && schoolDetails.overrideStudentDays1to5 > 0) ||
+    (schoolDetails.currentLifting1to5 && schoolDetails.currentLifting1to5 > 0) ||
+    (schoolDetails.prevBalanceRice1to5 && schoolDetails.prevBalanceRice1to5 > 0) ||
+    (schoolDetails.annualAllotment1to5 && schoolDetails.annualAllotment1to5 > 0)
+  );
+
+  const has6to8Data = Boolean(
+    studentDays6to8 > 0 ||
+    (schoolDetails.enroll6to8 && schoolDetails.enroll6to8 > 0) ||
+    (schoolDetails.overrideStudentDays6to8 && schoolDetails.overrideStudentDays6to8 > 0) ||
+    (schoolDetails.currentLifting6to8 && schoolDetails.currentLifting6to8 > 0) ||
+    (schoolDetails.prevBalanceRice6to8 && schoolDetails.prevBalanceRice6to8 > 0) ||
+    (schoolDetails.annualAllotment6to8 && schoolDetails.annualAllotment6to8 > 0)
+  );
+
   const row1to5: PrapatraRow = {
     sNo: '1',
     className: 'कक्षा 1-5',
@@ -122,9 +140,9 @@ export function calculatePrapatraRows(
     col17_telExp: telExp1to5,
     col18_jalawanExp: jalawanExp1to5,
     col19_totalExp: totalExp1to5,
-    col20_schoolWorkingDays: schoolWorkingDays,
-    col21_mdmServingDays: mdmServingDays,
-    col22_avgBeneficiaries: avgBeneficiaries1to5,
+    col20_schoolWorkingDays: has1to5Data ? schoolWorkingDays : 0,
+    col21_mdmServingDays: has1to5Data ? mdmServingDays : 0,
+    col22_avgBeneficiaries: has1to5Data ? avgBeneficiaries1to5 : 0,
     col23_enrollment: schoolDetails.enroll1to5 || 0,
     col24_remarks: schoolDetails.remarks1to5 || '',
   };
@@ -149,9 +167,9 @@ export function calculatePrapatraRows(
     col17_telExp: telExp6to8,
     col18_jalawanExp: jalawanExp6to8,
     col19_totalExp: totalExp6to8,
-    col20_schoolWorkingDays: schoolWorkingDays,
-    col21_mdmServingDays: mdmServingDays,
-    col22_avgBeneficiaries: avgBeneficiaries6to8,
+    col20_schoolWorkingDays: has6to8Data ? schoolWorkingDays : 0,
+    col21_mdmServingDays: has6to8Data ? mdmServingDays : 0,
+    col22_avgBeneficiaries: has6to8Data ? avgBeneficiaries6to8 : 0,
     col23_enrollment: schoolDetails.enroll6to8 || 0,
     col24_remarks: schoolDetails.remarks6to8 || '',
   };

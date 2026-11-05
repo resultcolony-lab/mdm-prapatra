@@ -464,7 +464,9 @@ export const Prapatra1Report: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleAutoTranslate('schoolName', schoolDetails.schoolName)}
-                className="no-print text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                className="no-print translate-helper-btn text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                data-no-print="true"
+                data-translate-btn="true"
                 title="हिन्दी में अनुवाद करें"
               >
                 हिन्दी
@@ -485,7 +487,9 @@ export const Prapatra1Report: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleAutoTranslate('blockName', schoolDetails.blockName)}
-                className="no-print text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                className="no-print translate-helper-btn text-[9px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-1 py-0.5 rounded border border-slate-300 cursor-pointer"
+                data-no-print="true"
+                data-translate-btn="true"
                 title="हिन्दी में अनुवाद करें"
               >
                 हिन्दी
