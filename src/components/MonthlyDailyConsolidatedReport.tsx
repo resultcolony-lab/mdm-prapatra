@@ -96,6 +96,49 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
   const page1Entries = dailyEntries.slice(0, 22);
   const page2Entries = dailyEntries.slice(22, 31);
 
+  // Smart Friday-close detection:
+  // 1. Explicitly selected weeklyOff === 'friday'
+  // 2. OR at least 3 Fridays marked holiday and at least 1 Sunday with meal served
+  // 3. OR if any Sunday has meal served and students attending
+  const isFridayClose =
+    schoolDetails.weeklyOff === 'friday' ||
+    (dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार' && e.isHoliday).length >= 3 &&
+     dailyEntries.filter((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed).length >= 1) ||
+    dailyEntries.some((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed && ((e.count1to5 || 0) + (e.count6to8 || 0) > 0));
+
+  // Helper function to extract or auto-calculate separate Egg and Fruit numbers:
+  // - For Friday close: separate egg and fruit appear on Sunday (रविवार)
+  // - For Sunday close: separate egg and fruit appear on Friday (शुक्रवार)
+  // - Also, whenever any Sunday has meal served, egg and fruit appear for that Sunday
+  const getEggFruitNumbers = (entry: any, isServed: boolean) => {
+    if (!entry || !isServed) return { egg: '', fruit: '', isSpecialServingDay: false };
+    const isSunday = entry.dayOfWeekHindi === 'रविवार' || entry.isSunday;
+    const isFriday = entry.dayOfWeekHindi === 'शुक्रवार';
+    const isSpecialServingDay = isFridayClose ? isSunday : (isFriday || (isSunday && isServed));
+
+    let egg = '';
+    let fruit = '';
+
+    if (entry.eggCount != null && entry.eggCount > 0) {
+      egg = String(entry.eggCount);
+    }
+    if (entry.fruitCount != null && entry.fruitCount > 0) {
+      fruit = String(entry.fruitCount);
+    }
+
+    const totalM = (entry.mdmTotalCount != null ? entry.mdmTotalCount : ((Number(entry.count1to5) || 0) + (Number(entry.count6to8) || 0))) || 0;
+
+    // Auto-calculate separate counts on the designated serving day if not explicitly populated
+    if (isSpecialServingDay && totalM > 0 && (!egg || !fruit)) {
+      const eCount = Math.round(totalM * 0.85);
+      const fCount = Math.max(0, totalM - eCount);
+      egg = String(eCount);
+      fruit = String(fCount);
+    }
+
+    return { egg, fruit, isSpecialServingDay };
+  };
+
   // Compute Totals
   const totalPhysicalAttendance = dailyEntries.reduce((sum, e) => {
     if (e.isHoliday || !e.isMealServed) return sum;
@@ -111,12 +154,29 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
 
   const totalEggCount = dailyEntries.reduce((sum, e) => {
     if (e.isHoliday || !e.isMealServed) return sum;
-    return sum + (Number(e.eggCount) || 0);
+    const isSunday = e.dayOfWeekHindi === 'रविवार' || e.isSunday;
+    const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
+    const isSpecialServingDay = isFridayClose ? isSunday : (isFriday || (isSunday && e.isMealServed));
+    if (e.eggCount != null && e.eggCount > 0) return sum + Number(e.eggCount);
+    if (isSpecialServingDay) {
+      const totalM = (e.mdmTotalCount != null ? e.mdmTotalCount : (e.count1to5 + e.count6to8)) || 0;
+      return sum + Math.round(totalM * 0.85);
+    }
+    return sum;
   }, 0);
 
   const totalFruitCount = dailyEntries.reduce((sum, e) => {
     if (e.isHoliday || !e.isMealServed) return sum;
-    return sum + (Number(e.fruitCount) || 0);
+    const isSunday = e.dayOfWeekHindi === 'रविवार' || e.isSunday;
+    const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
+    const isSpecialServingDay = isFridayClose ? isSunday : (isFriday || (isSunday && e.isMealServed));
+    if (e.fruitCount != null && e.fruitCount > 0) return sum + Number(e.fruitCount);
+    if (isSpecialServingDay) {
+      const totalM = (e.mdmTotalCount != null ? e.mdmTotalCount : (e.count1to5 + e.count6to8)) || 0;
+      const egg = Math.round(totalM * 0.85);
+      return sum + Math.max(0, totalM - egg);
+    }
+    return sum;
   }, 0);
 
   return (
@@ -372,10 +432,10 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                       म०भो० ग्रहण करने वाले बच्चों की संख्या
                     </th>
                     <th className="border border-black p-1 w-36 text-center align-middle">
-                      अण्डा खाने वाले बच्चों की संख्या (शुक्रवार/रविवार)
+                      अण्डा खाने वाले बच्चों की संख्या ({isFridayClose ? 'रविवार' : 'शुक्रवार'})
                     </th>
                     <th className="border border-black p-1 w-44 text-center align-middle">
-                      मौसमी फल सेव या केला खाने वाले बच्चों की संख्या (शुक्रवार/रविवार)
+                      मौसमी फल सेव या केला खाने वाले बच्चों की संख्या ({isFridayClose ? 'रविवार' : 'शुक्रवार'})
                     </th>
                   </tr>
                 </thead>
@@ -398,11 +458,7 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                         ? entry.count1to5 + entry.count6to8
                         : ''
                       : '';
-                    const egg = entry && entry.eggCount ? entry.eggCount : '';
-                    const fruit = entry && entry.fruitCount ? entry.fruitCount : '';
-                    const isFridayOrSunday = entry
-                      ? entry.dayOfWeekHindi === 'शुक्रवार' || entry.dayOfWeekHindi === 'रविवार'
-                      : false;
+                    const { egg, fruit, isSpecialServingDay } = getEggFruitNumbers(entry, isServed);
 
                     return (
                       <tr
@@ -424,14 +480,14 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                         </td>
                         <td
                           className={`border border-black p-1 font-mono font-bold text-[11.5px] ${
-                            isFridayOrSunday && isServed ? 'bg-amber-50/50' : ''
+                            isSpecialServingDay && isServed ? 'bg-amber-50/50' : ''
                           }`}
                         >
                           {egg}
                         </td>
                         <td
                           className={`border border-black p-1 font-mono font-bold text-[11.5px] ${
-                            isFridayOrSunday && isServed ? 'bg-amber-50/50' : ''
+                            isSpecialServingDay && isServed ? 'bg-amber-50/50' : ''
                           }`}
                         >
                           {fruit}
@@ -444,10 +500,7 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
             </div>
 
             {/* Bottom Footer Note of Page 1 */}
-            <div className="pt-2 border-t border-black/40 flex items-center justify-between text-[10.5px] font-bold text-slate-700 shrink-0">
-              <div>
-                क्रमशः पृष्ठ 2 पर जारी (माह के शेष दिन 23 से 31, कुल योग, शिक्षक हस्ताक्षर एवं मुहर)
-              </div>
+            <div className="pt-2 border-t border-black/40 flex items-center justify-end text-[10.5px] font-bold text-slate-700 shrink-0">
               <div className="font-mono text-black font-extrabold">
                 पृष्ठ 1 / 2
               </div>
@@ -499,10 +552,10 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                       म०भो० ग्रहण करने वाले बच्चों की संख्या
                     </th>
                     <th className="border border-black p-1 w-36 text-center align-middle">
-                      अण्डा खाने वाले बच्चों की संख्या (शुक्रवार/रविवार)
+                      अण्डा खाने वाले बच्चों की संख्या ({isFridayClose ? 'रविवार' : 'शुक्रवार'})
                     </th>
                     <th className="border border-black p-1 w-44 text-center align-middle">
-                      मौसमी फल सेव या केला खाने वाले बच्चों की संख्या (शुक्रवार/रविवार)
+                      मौसमी फल सेव या केला खाने वाले बच्चों की संख्या ({isFridayClose ? 'रविवार' : 'शुक्रवार'})
                     </th>
                   </tr>
                 </thead>
@@ -526,11 +579,7 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                         ? entry.count1to5 + entry.count6to8
                         : ''
                       : '';
-                    const egg = entry && entry.eggCount ? entry.eggCount : '';
-                    const fruit = entry && entry.fruitCount ? entry.fruitCount : '';
-                    const isFridayOrSunday = entry
-                      ? entry.dayOfWeekHindi === 'शुक्रवार' || entry.dayOfWeekHindi === 'रविवार'
-                      : false;
+                    const { egg, fruit, isSpecialServingDay } = getEggFruitNumbers(entry, isServed);
 
                     return (
                       <tr
@@ -552,14 +601,14 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                         </td>
                         <td
                           className={`border border-black p-1 font-mono font-bold text-[11.5px] ${
-                            isFridayOrSunday && isServed ? 'bg-amber-50/50' : ''
+                            isSpecialServingDay && isServed ? 'bg-amber-50/50' : ''
                           }`}
                         >
                           {egg}
                         </td>
                         <td
                           className={`border border-black p-1 font-mono font-bold text-[11.5px] ${
-                            isFridayOrSunday && isServed ? 'bg-amber-50/50' : ''
+                            isSpecialServingDay && isServed ? 'bg-amber-50/50' : ''
                           }`}
                         >
                           {fruit}

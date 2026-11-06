@@ -182,8 +182,16 @@ export const DailyRegisterReport: React.FC<Props> = ({ data }) => {
                 const jalawan = isServed ? c1 * rates.class1to5.jalawan.costPerChild + c2 * rates.class6to8.jalawan.costPerChild : 0;
                 const dayTotal = isServed ? c1 * rates.class1to5.totalCostPerChild + c2 * rates.class6to8.totalCostPerChild : 0;
 
+                const isFridayClose =
+                  schoolDetails.weeklyOff === 'friday' ||
+                  (dailyEntries.filter((d) => d.dayOfWeekHindi === 'शुक्रवार' && d.isHoliday).length >= 3 &&
+                   dailyEntries.filter((d) => (d.dayOfWeekHindi === 'रविवार' || d.isSunday) && d.isMealServed).length >= 1) ||
+                  dailyEntries.some((d) => (d.dayOfWeekHindi === 'रविवार' || d.isSunday) && d.isMealServed && ((d.count1to5 || 0) + (d.count6to8 || 0) > 0));
+
+                const isWeeklyOff = isFridayClose ? e.dayOfWeekHindi === 'शुक्रवार' : e.isSunday;
+
                 return (
-                  <tr key={e.day} className={e.isSunday ? 'bg-red-50/50' : e.isHoliday ? 'bg-amber-50/50' : ''}>
+                  <tr key={e.day} className={isWeeklyOff ? 'bg-red-50/50' : e.isHoliday ? 'bg-amber-50/50' : ''}>
                     <td className="border border-black p-1 font-mono">{String(e.day).padStart(2, '0')}</td>
                     <td className="border border-black p-1">{e.dayOfWeekHindi}</td>
                     <td className="border border-black p-1 text-[8.5px]">

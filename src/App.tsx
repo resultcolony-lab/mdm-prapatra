@@ -327,6 +327,7 @@ export default function App() {
           <DailyEntryTable
             data={data}
             onUpdateEntries={handleUpdateDailyEntries}
+            onUpdateSchoolDetails={handleUpdateSchoolDetails}
           />
         )}
 
@@ -432,17 +433,21 @@ export default function App() {
       </nav>
 
       {/* Footer */}
-      <footer className="no-print bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 mt-auto pb-20 md:pb-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="text-left">
-            <span className="font-medium text-slate-700">बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण (PM POSHAN) रिपोर्टिंग एवं स्वचालित लेखांकन प्रणाली</span>
-            <div className="font-mono text-[11px] text-slate-400 mt-0.5">
-              प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 सरकारी दर अनुपालन
+      <footer className="no-print bg-white border-t border-slate-200 py-5 px-6 text-xs text-slate-500 mt-auto pb-24 md:pb-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="text-center md:text-left">
+            <div className="font-semibold text-slate-800 text-sm">
+              बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण (PM POSHAN) रिपोर्टिंग एवं स्वचालित लेखांकन प्रणाली
+            </div>
+            <div className="text-[11.5px] text-slate-500 mt-0.5">
+              प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 संशोधित सरकारी दर अनुपालन • पूर्णियाँ (बिहार)
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs bg-indigo-50/70 px-3 py-1.5 rounded-lg border border-indigo-200 shadow-2xs">
-            <span className="text-slate-600 font-medium">Credit:</span>
-            <span className="font-extrabold text-indigo-700 tracking-wider">KAUSTUBH</span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-50 via-purple-50/40 to-blue-50 px-4 py-2 rounded-full border border-indigo-200 shadow-xs">
+              <span className="text-slate-600 font-medium text-xs">Designed & Developed by</span>
+              <span className="font-black text-indigo-700 tracking-wider text-sm">KAUSTUBH</span>
+            </div>
           </div>
         </div>
       </footer>

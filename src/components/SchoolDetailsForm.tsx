@@ -290,6 +290,44 @@ export const SchoolDetailsForm: React.FC<Props> = ({ data, onUpdateSchoolDetails
             />
           </div>
 
+          {/* Weekly Off / School Type Selector */}
+          <div className="sm:col-span-2 lg:col-span-3 bg-gradient-to-r from-amber-50 to-indigo-50/70 p-3.5 rounded-xl border border-amber-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <span>📅 विद्यालय का प्रकार एवं साप्ताहिक अवकाश (Weekly Off):</span>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-0.5">
+                  बिहार सरकार नियमानुसार: सामान्य विद्यालयों में <strong>रविवार बंद</strong> (शुक्रवार अंडा/फल), एवं उर्दू/मदरसा विद्यालयों में <strong>शुक्रवार बंद</strong> (रविवार अंडा/फल)।
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-300 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => handleChange('weeklyOff', 'sunday')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    (schoolDetails.weeklyOff || 'sunday') === 'sunday'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>☀️ रविवार बंद (सामान्य)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChange('weeklyOff', 'friday')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    schoolDetails.weeklyOff === 'friday'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>🕌 शुक्रवार बंद (उर्दू/मदरसा)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="font-semibold text-slate-700">

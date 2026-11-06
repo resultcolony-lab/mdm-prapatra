@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DailyEntry, MonthData } from '../types/mdm';
+import { DailyEntry, MonthData, SchoolDetails } from '../types/mdm';
 import { formatINR, formatKg, OFFICIAL_DEFAULT_RATES } from '../utils/mdmRates';
 import {
   Calendar,
@@ -24,10 +24,12 @@ import {
 interface Props {
   data: MonthData;
   onUpdateEntries: (updated: DailyEntry[]) => void;
+  onUpdateSchoolDetails?: (updated: SchoolDetails) => void;
 }
 
 // Official Bihar MDM Weekly Menu
 const OFFICIAL_WEEKLY_MENU: Record<string, string> = {
+  'रविवार': 'पुलाव, उबला अंडा / मौसमी फल (विशेष)',
   'सोमवार': 'चावल, दाल एवं हरी सब्जी',
   'मंगलवार': 'जीरा चावल, सोयाबीन बड़ी व आलू की सब्जी',
   'बुधवार': 'खिचड़ी (चावल, दाल, सब्जी) एवं चोखा',
@@ -39,6 +41,7 @@ const OFFICIAL_WEEKLY_MENU: Record<string, string> = {
 // Common Bihar school holidays
 const COMMON_HOLIDAYS = [
   'रविवार',
+  'शुक्रवार',
   'दीपावली / छठ पूजा',
   'दुर्गा पूजा',
   'होली',
@@ -50,9 +53,19 @@ const COMMON_HOLIDAYS = [
   'परीक्षा दिवस',
 ];
 
-export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
+export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries, onUpdateSchoolDetails }) => {
   const { dailyEntries, schoolDetails } = data;
   const rates = data.customRates || OFFICIAL_DEFAULT_RATES;
+  const weeklyOff = schoolDetails.weeklyOff || 'sunday';
+  // Smart Friday-close detection:
+  // 1. Explicitly selected weeklyOff === 'friday'
+  // 2. OR at least 3 Fridays marked holiday and at least 1 Sunday with meal served
+  // 3. OR if any Sunday has meal served and students attending
+  const isFridayClose =
+    weeklyOff === 'friday' ||
+    (dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार' && e.isHoliday).length >= 3 &&
+     dailyEntries.filter((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed).length >= 1) ||
+    dailyEntries.some((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed && ((e.count1to5 || 0) + (e.count6to8 || 0) > 0));
 
   // Defaults based on enrollment (75% of enrollment or defaults 95/75)
   const default1to5 = schoolDetails.enroll1to5 ? Math.round(schoolDetails.enroll1to5 * 0.75) : 95;
@@ -72,6 +85,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
     const updated = [...dailyEntries];
     const item = { ...updated[index], [field]: value };
 
+    const isSunday = item.dayOfWeekHindi === 'रविवार' || item.isSunday;
+    const isFriday = item.dayOfWeekHindi === 'शुक्रवार';
+
     // If marked as holiday, meal served is automatically false and counts set to 0
     if (field === 'isHoliday' && value === true) {
       item.isMealServed = false;
@@ -81,7 +97,26 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
       item.eggCount = 0;
       item.fruitCount = 0;
       item.physicalAttendance = 0;
-      if (!item.holidayReason) item.holidayReason = item.isSunday ? 'रविवार' : 'अवकाश';
+      if (!item.holidayReason) item.holidayReason = isSunday ? 'रविवार' : isFriday ? 'शुक्रवार' : 'अवकाश';
+    }
+
+    // If holiday is toggled off (opened), or meal served turned true
+    if ((field === 'isHoliday' && value === false) || (field === 'isMealServed' && value === true)) {
+      item.isHoliday = false;
+      item.holidayReason = '';
+      item.isMealServed = true;
+      if (!item.count1to5 && !item.count6to8) {
+        item.count1to5 = default1to5;
+        item.count6to8 = default6to8;
+        item.mdmTotalCount = default1to5 + default6to8;
+        item.physicalAttendance = default1to5 + default6to8;
+      }
+      const total = (Number(item.count1to5 || 0) + Number(item.count6to8 || 0)) || item.mdmTotalCount || 0;
+      const isEggFruitDay = isFridayClose ? isSunday : (isFriday || isSunday);
+      if (isEggFruitDay && total > 0) {
+        item.eggCount = Math.round(total * 0.85);
+        item.fruitCount = Math.max(0, total - item.eggCount);
+      }
     }
 
     // If meal served turned false
@@ -91,21 +126,74 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
       item.mdmTotalCount = 0;
       item.eggCount = 0;
       item.fruitCount = 0;
+      item.physicalAttendance = 0;
     }
 
-    // If meal served turned true on holiday, unmark holiday
-    if (field === 'isMealServed' && value === true && item.isHoliday) {
-      item.isHoliday = false;
-      item.holidayReason = '';
+    // Auto sync MDM total count, physical attendance, and egg/fruit when class counts or attendance change
+    if (field === 'count1to5' || field === 'count6to8' || field === 'mdmTotalCount' || field === 'physicalAttendance') {
+      let c1 = field === 'count1to5' ? Number(value || 0) : Number(item.count1to5 || 0);
+      let c2 = field === 'count6to8' ? Number(value || 0) : Number(item.count6to8 || 0);
+      let total = c1 + c2;
+
+      if (field === 'mdmTotalCount') {
+        const directTotal = value === '' || value == null ? 0 : Number(value);
+        item.mdmTotalCount = directTotal;
+        total = directTotal;
+        if (directTotal > 0 && c1 === 0 && c2 === 0) {
+          const enroll1 = schoolDetails.enroll1to5 || 100;
+          const enroll2 = schoolDetails.enroll6to8 || 80;
+          const ratio1 = enroll1 / (enroll1 + enroll2 || 1);
+          c1 = Math.round(directTotal * ratio1);
+          c2 = Math.max(0, directTotal - c1);
+          item.count1to5 = c1;
+          item.count6to8 = c2;
+        }
+      } else {
+        item.mdmTotalCount = total;
+      }
+
+      // If attendance > 0 is typed on any day, auto-unmark holiday and mark meal served
+      if (total > 0) {
+        item.isMealServed = true;
+        item.isHoliday = false;
+        item.holidayReason = '';
+      }
+
+      if (field === 'physicalAttendance') {
+        item.physicalAttendance = value === '' || value == null ? total : Number(value);
+      } else if (!item.physicalAttendance || item.physicalAttendance === 0) {
+        item.physicalAttendance = total;
+      }
+
+      // Real-time Egg (85%) & Fruit (15%) auto-sync:
+      // On ANY Sunday with meal served, or on Friday (in Sunday-close schools):
+      const isEggFruitDay = isFridayClose ? isSunday : (isFriday || isSunday);
+      if (isEggFruitDay && item.isMealServed && !item.isHoliday && total > 0) {
+        item.eggCount = Math.round(total * 0.85);
+        item.fruitCount = Math.max(0, total - item.eggCount);
+      } else if (!item.isMealServed || item.isHoliday || total === 0) {
+        item.eggCount = 0;
+        item.fruitCount = 0;
+      }
     }
 
-    // Auto sync MDM total count and physical attendance when class counts change
-    if (field === 'count1to5' || field === 'count6to8') {
-      const c1 = field === 'count1to5' ? Number(value || 0) : Number(item.count1to5 || 0);
-      const c2 = field === 'count6to8' ? Number(value || 0) : Number(item.count6to8 || 0);
-      item.mdmTotalCount = c1 + c2;
-      if (!item.physicalAttendance || item.physicalAttendance === (item.count1to5 + item.count6to8)) {
-        item.physicalAttendance = c1 + c2;
+    // If eggCount is explicitly edited by the user, balance fruitCount
+    if (field === 'eggCount') {
+      const eggVal = value === '' || value == null ? 0 : Math.max(0, Number(value));
+      item.eggCount = eggVal;
+      const total = item.mdmTotalCount || (Number(item.count1to5 || 0) + Number(item.count6to8 || 0));
+      if (total > 0) {
+        item.fruitCount = Math.max(0, total - eggVal);
+      }
+    }
+
+    // If fruitCount is explicitly edited by the user, balance eggCount
+    if (field === 'fruitCount') {
+      const fruitVal = value === '' || value == null ? 0 : Math.max(0, Number(value));
+      item.fruitCount = fruitVal;
+      const total = item.mdmTotalCount || (Number(item.count1to5 || 0) + Number(item.count6to8 || 0));
+      if (total > 0) {
+        item.eggCount = Math.max(0, total - fruitVal);
       }
     }
 
@@ -116,17 +204,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
   // Quick Adjustment (+5 / -5 / +1 / -1)
   const handleQuickAdjust = (index: number, classType: '1to5' | '6to8', delta: number) => {
     const item = dailyEntries[index];
-    if (!item.isMealServed || item.isHoliday) return;
-
-    if (classType === '1to5') {
-      const current = Number(item.count1to5 || 0);
-      const next = Math.max(0, current + delta);
-      handleEntryChange(index, 'count1to5', next);
-    } else {
-      const current = Number(item.count6to8 || 0);
-      const next = Math.max(0, current + delta);
-      handleEntryChange(index, 'count6to8', next);
-    }
+    const current = Number(item[classType === '1to5' ? 'count1to5' : 'count6to8'] || 0);
+    const next = Math.max(0, current + delta);
+    handleEntryChange(index, classType === '1to5' ? 'count1to5' : 'count6to8', next);
   };
 
   // Copy previous day's attendance to this day
@@ -143,8 +223,8 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
       count6to8: prev.count6to8,
       mdmTotalCount: prev.mdmTotalCount,
       physicalAttendance: prev.physicalAttendance,
-      eggCount: curr.dayOfWeekHindi === 'शुक्रवार' ? Math.round((prev.count1to5 + prev.count6to8) * 0.85) : 0,
-      fruitCount: curr.dayOfWeekHindi === 'शुक्रवार' ? Math.round((prev.count1to5 + prev.count6to8) * 0.15) : 0,
+      eggCount: (isFridayClose ? curr.dayOfWeekHindi === 'रविवार' : curr.dayOfWeekHindi === 'शुक्रवार') ? Math.round((prev.count1to5 + prev.count6to8) * 0.85) : 0,
+      fruitCount: (isFridayClose ? curr.dayOfWeekHindi === 'रविवार' : curr.dayOfWeekHindi === 'शुक्रवार') ? Math.round((prev.count1to5 + prev.count6to8) * 0.15) : 0,
     };
     onUpdateEntries(updated);
   };
@@ -158,11 +238,12 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
     }
 
     const updated = dailyEntries.map((e, idx) => {
-      if (idx <= fromIndex || e.isHoliday || e.isSunday) return e;
+      const isWeeklyOff = isFridayClose ? e.dayOfWeekHindi === 'शुक्रवार' : e.isSunday;
+      if (idx <= fromIndex || e.isHoliday || isWeeklyOff) return e;
       const total = source.count1to5 + source.count6to8;
-      const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
-      const egg = isFriday ? Math.round(total * 0.85) : 0;
-      const fruit = isFriday ? Math.max(0, total - egg) : 0;
+      const isEggFruitDay = isFridayClose ? e.dayOfWeekHindi === 'रविवार' : e.dayOfWeekHindi === 'शुक्रवार';
+      const egg = isEggFruitDay ? Math.round(total * 0.85) : 0;
+      const fruit = isEggFruitDay ? Math.max(0, total - egg) : 0;
       return {
         ...e,
         isMealServed: true,
@@ -186,9 +267,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
       if (prev.isMealServed && !prev.isHoliday) {
         const total = prev.count1to5 + prev.count6to8;
         const target = dailyEntries[targetIndex];
-        const isFriday = target.dayOfWeekHindi === 'शुक्रवार';
-        const egg = isFriday ? Math.round(total * 0.85) : 0;
-        const fruit = isFriday ? Math.max(0, total - egg) : 0;
+        const isEggFruitDay = isFridayClose ? target.dayOfWeekHindi === 'रविवार' : target.dayOfWeekHindi === 'शुक्रवार';
+        const egg = isEggFruitDay ? Math.round(total * 0.85) : 0;
+        const fruit = isEggFruitDay ? Math.max(0, total - egg) : 0;
 
         const updated = [...dailyEntries];
         updated[targetIndex] = {
@@ -216,11 +297,12 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
     const base2 = parseInt(bulkClass2, 10) || 0;
 
     const updated = dailyEntries.map((e, idx) => {
-      if (e.isSunday) {
+      const isWeeklyOff = isFridayClose ? e.dayOfWeekHindi === 'शुक्रवार' : e.isSunday;
+      if (isWeeklyOff) {
         return {
           ...e,
           isHoliday: true,
-          holidayReason: 'रविवार',
+          holidayReason: isFridayClose ? 'शुक्रवार' : 'रविवार',
           isMealServed: false,
           count1to5: 0,
           count6to8: 0,
@@ -246,9 +328,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
       }
 
       const total = c1 + c2;
-      const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
-      const egg = (includeFridaySpecials && isFriday) ? Math.round(total * 0.85) : 0;
-      const fruit = (includeFridaySpecials && isFriday) ? Math.max(0, total - egg) : 0;
+      const isEggFruitDay = isFridayClose ? e.dayOfWeekHindi === 'रविवार' : e.dayOfWeekHindi === 'शुक्रवार';
+      const egg = (includeFridaySpecials && isEggFruitDay) ? Math.round(total * 0.85) : 0;
+      const fruit = (includeFridaySpecials && isEggFruitDay) ? Math.max(0, total - egg) : 0;
 
       // Menu
       const menu = includeMenu ? (OFFICIAL_WEEKLY_MENU[e.dayOfWeekHindi] || e.remarks || '') : e.remarks;
@@ -289,12 +371,98 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
     onUpdateEntries(updated);
   };
 
-  // Auto-fill Friday Egg & Fruit
-  const autoFillFridayEggFruit = () => {
+  // Switch Weekly Off mode between Sunday and Friday
+  const setWeeklyOffMode = (mode: 'sunday' | 'friday') => {
+    if (onUpdateSchoolDetails) {
+      onUpdateSchoolDetails({ ...schoolDetails, weeklyOff: mode });
+    }
+    if (mode === 'friday') {
+      // Mark all Fridays as Holiday, reopen Sundays
+      const updated = dailyEntries.map((e) => {
+        if (e.dayOfWeekHindi === 'शुक्रवार') {
+          return {
+            ...e,
+            isHoliday: true,
+            holidayReason: 'शुक्रवार',
+            isMealServed: false,
+            count1to5: 0,
+            count6to8: 0,
+            mdmTotalCount: 0,
+            eggCount: 0,
+            fruitCount: 0,
+            physicalAttendance: 0,
+          };
+        }
+        if (e.isSunday && (e.holidayReason === 'रविवार' || !e.holidayReason)) {
+          const c1 = default1to5;
+          const c2 = default6to8;
+          const total = c1 + c2;
+          return {
+            ...e,
+            isHoliday: false,
+            holidayReason: '',
+            isMealServed: true,
+            count1to5: c1,
+            count6to8: c2,
+            mdmTotalCount: total,
+            physicalAttendance: total,
+            eggCount: Math.round(total * 0.85),
+            fruitCount: Math.max(0, total - Math.round(total * 0.85)),
+            remarks: OFFICIAL_WEEKLY_MENU['रविवार'],
+          };
+        }
+        return e;
+      });
+      onUpdateEntries(updated);
+    } else {
+      // Mark all Sundays as Holiday, reopen Fridays
+      const updated = dailyEntries.map((e) => {
+        if (e.isSunday) {
+          return {
+            ...e,
+            isHoliday: true,
+            holidayReason: 'रविवार',
+            isMealServed: false,
+            count1to5: 0,
+            count6to8: 0,
+            mdmTotalCount: 0,
+            eggCount: 0,
+            fruitCount: 0,
+            physicalAttendance: 0,
+          };
+        }
+        if (e.dayOfWeekHindi === 'शुक्रवार' && (e.holidayReason === 'शुक्रवार' || !e.holidayReason)) {
+          const c1 = default1to5;
+          const c2 = default6to8;
+          const total = c1 + c2;
+          return {
+            ...e,
+            isHoliday: false,
+            holidayReason: '',
+            isMealServed: true,
+            count1to5: c1,
+            count6to8: c2,
+            mdmTotalCount: total,
+            physicalAttendance: total,
+            eggCount: Math.round(total * 0.85),
+            fruitCount: Math.max(0, total - Math.round(total * 0.85)),
+            remarks: OFFICIAL_WEEKLY_MENU['शुक्रवार'],
+          };
+        }
+        return e;
+      });
+      onUpdateEntries(updated);
+    }
+  };
+
+  // Auto-fill Weekly Egg & Fruit (Friday for Sunday-closed, Sunday for Friday-closed or open Sundays)
+  const autoFillWeeklyEggFruit = () => {
     const updated = dailyEntries.map((e) => {
+      const isSunday = e.dayOfWeekHindi === 'रविवार' || e.isSunday;
       const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
-      if (isFriday && e.isMealServed && !e.isHoliday) {
-        const total = (e.count1to5 || 0) + (e.count6to8 || 0);
+      const isTargetDay = isFridayClose ? isSunday : (isFriday || isSunday);
+      if (isTargetDay && e.isMealServed && !e.isHoliday) {
+        const total = (Number(e.count1to5 || 0) + Number(e.count6to8 || 0)) || Number(e.mdmTotalCount || 0);
         const egg = Math.round(total * 0.85);
         const fruit = Math.max(0, total - egg);
         return {
@@ -318,6 +486,28 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
           ...e,
           isHoliday: true,
           holidayReason: 'रविवार',
+          isMealServed: false,
+          count1to5: 0,
+          count6to8: 0,
+          mdmTotalCount: 0,
+          eggCount: 0,
+          fruitCount: 0,
+          physicalAttendance: 0,
+        };
+      }
+      return e;
+    });
+    onUpdateEntries(updated);
+  };
+
+  // Mark all Fridays as Holidays (for Urdu/Madarsa schools)
+  const markFridaysAsHolidays = () => {
+    const updated = dailyEntries.map((e) => {
+      if (e.dayOfWeekHindi === 'शुक्रवार') {
+        return {
+          ...e,
+          isHoliday: true,
+          holidayReason: 'शुक्रवार',
           isMealServed: false,
           count1to5: 0,
           count6to8: 0,
@@ -479,16 +669,40 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                     onChange={(e) => setIncludeFridaySpecials(e.target.checked)}
                     className="rounded text-blue-600"
                   />
-                  <span>शुक्रवार अंडा (85%) व फल (15%) भरें</span>
+                  <span>{isFridayClose ? 'रविवार अंडा (85%) व फल (15%) भरें' : 'शुक्रवार अंडा (85%) व फल (15%) भरें'}</span>
                 </label>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                {/* Weekly Off Toggle */}
+                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-300 text-[10.5px]">
+                  <button
+                    type="button"
+                    onClick={() => setWeeklyOffMode('sunday')}
+                    className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
+                      !isFridayClose ? 'bg-indigo-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="सामान्य विद्यालय (रविवार अवकाश, शुक्रवार अंडा/फल)"
+                  >
+                    ☀️ रविवार बंद
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWeeklyOffMode('friday')}
+                    className={`px-2 py-0.5 rounded font-bold transition cursor-pointer ${
+                      isFridayClose ? 'bg-emerald-700 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="उर्दू विद्यालय / मदरसा (शुक्रवार अवकाश, रविवार अंडा/फल)"
+                  >
+                    🕌 शुक्रवार बंद
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleAutoFillMenu}
                   className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-md font-semibold transition cursor-pointer flex items-center gap-1"
-                  title="सोम-शनि आधिकारिक मेनू भरें"
+                  title="आधिकारिक साप्ताहिक मेनू भरें"
                 >
                   <Utensils className="w-3.5 h-3.5 text-amber-700" />
                   <span>साप्ताहिक मेनू भरें</span>
@@ -496,20 +710,34 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
 
                 <button
                   type="button"
-                  onClick={autoFillFridayEggFruit}
+                  onClick={autoFillWeeklyEggFruit}
                   className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-md font-semibold transition cursor-pointer flex items-center gap-1"
+                  title={isFridayClose ? 'माह के सभी खुले रविवारों में अंडा/फल भरें' : 'माह के सभी खुले शुक्रवारों में अंडा/फल भरें'}
                 >
-                  <span>🥚 शुक्रवार अंडा/फल</span>
+                  <span>🥚 {isFridayClose ? 'रविवार अंडा/फल' : 'शुक्रवार अंडा/फल'}</span>
                 </button>
 
-                <button
-                  type="button"
-                  onClick={markSundaysAsHolidays}
-                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-300 rounded-md font-semibold transition cursor-pointer flex items-center gap-1"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-rose-600" />
-                  <span>रविवार अवकाश करें</span>
-                </button>
+                {isFridayClose ? (
+                  <button
+                    type="button"
+                    onClick={markFridaysAsHolidays}
+                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-300 rounded-md font-semibold transition cursor-pointer flex items-center gap-1"
+                    title="माह के सभी शुक्रवारों को अवकाश करें"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-rose-600" />
+                    <span>शुक्रवार अवकाश करें</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={markSundaysAsHolidays}
+                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-300 rounded-md font-semibold transition cursor-pointer flex items-center gap-1"
+                    title="माह के सभी रविवारों को अवकाश करें"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-rose-600" />
+                    <span>रविवार अवकाश करें</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -588,6 +816,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
             const originalIndex = dailyEntries.findIndex((e) => e.day === entry.day);
             const isServed = entry.isMealServed && !entry.isHoliday;
             const isFriday = entry.dayOfWeekHindi === 'शुक्रवार';
+            const isSunday = entry.isSunday || entry.dayOfWeekHindi === 'रविवार';
+            const isWeeklyOffDay = isFridayClose ? isFriday : (entry.isHoliday && entry.holidayReason === 'शुक्रवार' ? isFriday : isSunday);
+            const isEggFruitDay = isFridayClose ? isSunday : (isFriday || (isSunday && isServed));
             const c1 = isServed ? Number(entry.count1to5 || 0) : 0;
             const c2 = isServed ? Number(entry.count6to8 || 0) : 0;
             const totalStudents = c1 + c2;
@@ -598,11 +829,11 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
               <div
                 key={entry.day}
                 className={`rounded-2xl border p-3.5 shadow-xs transition ${
-                  entry.isSunday
+                  isWeeklyOffDay
                     ? 'bg-rose-50/50 border-rose-200'
                     : entry.isHoliday
                     ? 'bg-amber-50/50 border-amber-200'
-                    : isFriday
+                    : isEggFruitDay
                     ? 'bg-amber-50/30 border-amber-300'
                     : isServed
                     ? 'bg-white border-slate-200 hover:border-blue-300'
@@ -614,9 +845,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                   <div className="flex items-center gap-2">
                     <span
                       className={`w-9 h-9 rounded-xl flex items-center justify-center font-mono font-extrabold text-sm shadow-xs ${
-                        entry.isSunday
+                        isWeeklyOffDay
                           ? 'bg-rose-600 text-white'
-                          : isFriday
+                          : isEggFruitDay
                           ? 'bg-amber-600 text-white'
                           : 'bg-indigo-600 text-white'
                       }`}
@@ -626,7 +857,12 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                     <div>
                       <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
                         <span>{entry.dayOfWeekHindi}</span>
-                        {isFriday && (
+                        {isWeeklyOffDay && (
+                          <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded font-semibold">
+                            साप्ताहिक अवकाश
+                          </span>
+                        )}
+                        {isEggFruitDay && isServed && (
                           <span className="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-semibold">
                             🥚 अंडा/फल
                           </span>
@@ -803,15 +1039,15 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                       </div>
                     </div>
 
-                    {/* Friday Specials (Egg & Fruit) */}
-                    {isFriday && (
+                    {/* Weekly Specials (Egg & Fruit) */}
+                    {isEggFruitDay && isServed && (
                       <div className="bg-amber-100/60 p-2 rounded-xl border border-amber-300/80 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1 flex-1">
                           <span className="font-bold text-amber-900 text-[11px]">🥚 अंडा:</span>
                           <input
                             type="number"
                             min="0"
-                            value={entry.eggCount != null ? entry.eggCount : Math.round(totalStudents * 0.85)}
+                            value={entry.eggCount != null && entry.eggCount > 0 ? entry.eggCount : (totalStudents > 0 ? Math.round(totalStudents * 0.85) : '')}
                             onChange={(e) => handleEntryChange(originalIndex, 'eggCount', parseInt(e.target.value) || 0)}
                             className="w-14 text-center font-mono font-bold py-1 border border-amber-400 rounded bg-white text-xs"
                           />
@@ -821,7 +1057,7 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                           <input
                             type="number"
                             min="0"
-                            value={entry.fruitCount != null ? entry.fruitCount : Math.max(0, totalStudents - Math.round(totalStudents * 0.85))}
+                            value={entry.fruitCount != null && entry.fruitCount > 0 ? entry.fruitCount : (totalStudents > 0 ? Math.max(0, totalStudents - Math.round(totalStudents * 0.85)) : '')}
                             onChange={(e) => handleEntryChange(originalIndex, 'fruitCount', parseInt(e.target.value) || 0)}
                             className="w-14 text-center font-mono font-bold py-1 border border-emerald-400 rounded bg-white text-xs"
                           />
@@ -915,10 +1151,10 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                 <th className="p-2 text-right w-20 bg-blue-50/60 font-bold" title="अपलोड किए गए PDF का कॉलम 4">
                   म०भो० कुल
                 </th>
-                <th className="p-2 text-right w-16 bg-amber-50/50" title="अण्डा (शुक्रवार)">
+                <th className="p-2 text-right w-16 bg-amber-50/50" title={isFridayClose ? 'अण्डा (रविवार)' : 'अण्डा (शुक्रवार)'}>
                   अण्डा
                 </th>
-                <th className="p-2 text-right w-16 bg-emerald-50/50" title="मौसमी फल (शुक्रवार)">
+                <th className="p-2 text-right w-16 bg-emerald-50/50" title={isFridayClose ? 'मौसमी फल (रविवार)' : 'मौसमी फल (शुक्रवार)'}>
                   फल
                 </th>
                 <th className="p-2 text-right w-20 bg-amber-50/40">चावल (kg)</th>
@@ -932,6 +1168,9 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                 const originalIndex = dailyEntries.findIndex((e) => e.day === entry.day);
                 const isServed = entry.isMealServed && !entry.isHoliday;
                 const isFriday = entry.dayOfWeekHindi === 'शुक्रवार';
+                const isSunday = entry.isSunday || entry.dayOfWeekHindi === 'रविवार';
+                const isWeeklyOffDay = isFridayClose ? isFriday : (entry.isHoliday && entry.holidayReason === 'शुक्रवार' ? isFriday : isSunday);
+                const isEggFruitDay = isFridayClose ? isSunday : (isFriday || (isSunday && isServed));
                 const c1 = isServed ? Number(entry.count1to5 || 0) : 0;
                 const c2 = isServed ? Number(entry.count6to8 || 0) : 0;
                 const totalStudents = c1 + c2;
@@ -952,11 +1191,11 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                   <tr
                     key={entry.day}
                     className={`transition hover:bg-slate-50 ${
-                      entry.isSunday
+                      isWeeklyOffDay
                         ? 'bg-rose-50/40'
                         : entry.isHoliday
                         ? 'bg-amber-50/30'
-                        : isFriday
+                        : isEggFruitDay
                         ? 'bg-amber-50/20'
                         : isServed
                         ? 'bg-white'
@@ -972,14 +1211,16 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                     <td className="p-2 whitespace-nowrap">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${
-                          entry.isSunday
+                          isWeeklyOffDay
                             ? 'bg-red-100 text-red-800'
-                            : isFriday
+                            : isEggFruitDay
                             ? 'bg-amber-100 text-amber-900'
                             : 'text-slate-700'
                         }`}
                       >
                         {entry.dayOfWeekHindi}
+                        {isWeeklyOffDay && ' (अवकाश)'}
+                        {isEggFruitDay && isServed && ' 🥚'}
                       </span>
                     </td>
 
@@ -1176,14 +1417,22 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                         type="number"
                         min={0}
                         disabled={!isServed}
-                        value={isServed ? (entry.eggCount ?? '') : ''}
+                        value={
+                          isServed
+                            ? (entry.eggCount != null && entry.eggCount > 0
+                                ? entry.eggCount
+                                : isEggFruitDay && totalStudents > 0
+                                ? Math.round(totalStudents * 0.85)
+                                : (entry.eggCount ?? ''))
+                            : ''
+                        }
                         onChange={(e) => {
                           const val = e.target.value === '' ? undefined : Math.max(0, parseInt(e.target.value, 10) || 0);
                           handleEntryChange(originalIndex, 'eggCount', val);
                         }}
-                        placeholder={isServed && isFriday ? String(Math.round(totalStudents * 0.85)) : '-'}
+                        placeholder={isServed && isEggFruitDay ? String(Math.round(totalStudents * 0.85)) : '-'}
                         className={`w-14 text-right font-mono font-medium px-1 py-1 rounded border ${
-                          isFriday ? 'border-amber-300 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-200 bg-white text-slate-700'
+                          isEggFruitDay ? 'border-amber-300 bg-amber-50/50 text-amber-950 font-bold' : 'border-slate-200 bg-white text-slate-700'
                         } text-xs`}
                       />
                     </td>
@@ -1194,14 +1443,22 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries }) => {
                         type="number"
                         min={0}
                         disabled={!isServed}
-                        value={isServed ? (entry.fruitCount ?? '') : ''}
+                        value={
+                          isServed
+                            ? (entry.fruitCount != null && entry.fruitCount > 0
+                                ? entry.fruitCount
+                                : isEggFruitDay && totalStudents > 0
+                                ? Math.max(0, totalStudents - Math.round(totalStudents * 0.85))
+                                : (entry.fruitCount ?? ''))
+                            : ''
+                        }
                         onChange={(e) => {
                           const val = e.target.value === '' ? undefined : Math.max(0, parseInt(e.target.value, 10) || 0);
                           handleEntryChange(originalIndex, 'fruitCount', val);
                         }}
-                        placeholder={isServed && isFriday ? String(Math.max(0, totalStudents - Math.round(totalStudents * 0.85))) : '-'}
+                        placeholder={isServed && isEggFruitDay ? String(Math.max(0, totalStudents - Math.round(totalStudents * 0.85))) : '-'}
                         className={`w-14 text-right font-mono font-medium px-1 py-1 rounded border ${
-                          isFriday ? 'border-emerald-300 bg-emerald-50/50 text-emerald-950 font-bold' : 'border-slate-200 bg-white text-slate-700'
+                          isEggFruitDay ? 'border-emerald-300 bg-emerald-50/50 text-emerald-950 font-bold' : 'border-slate-200 bg-white text-slate-700'
                         } text-xs`}
                       />
                     </td>

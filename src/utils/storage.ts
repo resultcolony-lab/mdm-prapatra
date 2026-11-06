@@ -6,7 +6,13 @@ const ACTIVE_MONTH_KEY = 'bihar_pm_poshan_active_month_id';
 
 const HINDI_DAYS = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
 
-export function generateDailyEntries(year: number, month: number, default1to5: number = 0, default6to8: number = 0): DailyEntry[] {
+export function generateDailyEntries(
+  year: number,
+  month: number,
+  default1to5: number = 0,
+  default6to8: number = 0,
+  weeklyOff: 'sunday' | 'friday' = 'sunday'
+): DailyEntry[] {
   // month is 1-indexed (1 to 12)
   const daysInMonth = new Date(year, month, 0).getDate();
   const entries: DailyEntry[] = [];
@@ -15,13 +21,15 @@ export function generateDailyEntries(year: number, month: number, default1to5: n
     const d = new Date(year, month - 1, day);
     const dayOfWeekIdx = d.getDay();
     const isSunday = dayOfWeekIdx === 0;
+    const isFriday = dayOfWeekIdx === 5;
     const dayOfWeekHindi = HINDI_DAYS[dayOfWeekIdx];
     const dateStr = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
 
-    // By default, if Sunday, holiday and no meal
-    const isHoliday = isSunday;
-    const holidayReason = isSunday ? 'रविवार' : '';
-    const isMealServed = !isSunday;
+    // By default, check weekly off
+    const isWeeklyOff = weeklyOff === 'friday' ? isFriday : isSunday;
+    const isHoliday = isWeeklyOff;
+    const holidayReason = isWeeklyOff ? (weeklyOff === 'friday' ? 'शुक्रवार' : 'रविवार') : '';
+    const isMealServed = !isWeeklyOff;
 
     entries.push({
       day,
@@ -42,6 +50,7 @@ export function generateDailyEntries(year: number, month: number, default1to5: n
 
 export function getDefaultDemoMonthData(): MonthData {
   const schoolDetails: SchoolDetails = {
+    weeklyOff: 'sunday',
     schoolName: '',
     blockName: '',
     districtName: 'पूर्णियाँ',

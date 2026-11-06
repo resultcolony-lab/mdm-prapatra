@@ -93,11 +93,19 @@ export const QuickMetricsEditModal: React.FC<Props> = ({
       const c2 = parseInt(avg6to8, 10) || 0;
       const total = c1 + c2;
 
+      const isFridayClose =
+        schoolDetails.weeklyOff === 'friday' ||
+        (dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार' && e.isHoliday).length >= 3 &&
+         dailyEntries.filter((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed).length >= 1) ||
+        dailyEntries.some((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed && ((e.count1to5 || 0) + (e.count6to8 || 0) > 0));
+
       const updatedEntries = dailyEntries.map((e) => {
         if (e.isHoliday) return e;
+        const isSunday = e.dayOfWeekHindi === 'रविवार' || e.isSunday;
         const isFriday = e.dayOfWeekHindi === 'शुक्रवार';
-        const egg = isFriday ? Math.round(total * 0.85) : 0;
-        const fruit = isFriday ? Math.max(0, total - egg) : 0;
+        const isEggFruitDay = isFridayClose ? isSunday : (isFriday || isSunday);
+        const egg = isEggFruitDay ? Math.round(total * 0.85) : 0;
+        const fruit = isEggFruitDay ? Math.max(0, total - egg) : 0;
         return {
           ...e,
           isMealServed: true,

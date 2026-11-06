@@ -464,17 +464,17 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
 
                 <tbody>
                   {/* Row 1: कक्षा 1-5 */}
-                  <tr className="hover:bg-slate-50 transition" style={{ height: '42px' }}>
-                    <td className="border border-black px-0.5 py-1 font-bold align-middle">{calc.row1to5.sNo}</td>
-                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.row1to5.className}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col3_annualAllotment)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col4_prevLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col5_currentLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col6_totalLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col7_prevBalanceRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col8_totalAvailableRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col9_consumedRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col8_totalAvailableRice > 0 ? formatValKg(calc.row1to5.col10_closingBalanceRice) : '-'}</td>
+                  <tr className="hover:bg-slate-50 transition" style={{ height: '95px' }}>
+                    <td className="border border-black px-0.5 py-1 text-center font-extrabold text-[11px] align-middle">{calc.row1to5.sNo}</td>
+                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle text-[11px]">{calc.row1to5.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col3_annualAllotment)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col4_prevLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col5_currentLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col6_totalLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col7_prevBalanceRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col8_totalAvailableRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.row1to5.col9_consumedRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col8_totalAvailableRice > 0 ? formatValKg(calc.row1to5.col10_closingBalanceRice) : '-'}</td>
                     <td className="border border-black p-0 font-mono font-bold text-center bg-amber-50/70 overflow-hidden align-middle">
                       <input
                         type="number"
@@ -485,41 +485,41 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                           const val = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0);
                           onUpdateSchoolDetails?.({ ...schoolDetails, overrideStudentDays1to5: val });
                         }}
-                        className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[9.5px] py-0.5"
+                        className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[11px] py-1"
                         title="कॉलम 11 (कुल विद्यार्थी-दिवस 1-5): सीधे एडिट करें"
                       />
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {calc.row1to5.col12_pfmsLimitReceived != null && calc.row1to5.col12_pfmsLimitReceived > 0 ? formatINR(calc.row1to5.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {calc.row1to5.col13_pfmsBalanceAmount != null && calc.row1to5.col13_pfmsBalanceAmount > 0 ? formatINR(calc.row1to5.col13_pfmsBalanceAmount) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col14_dalExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col15_masalaExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col16_sabjiExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col17_telExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col18_jalawanExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col19_totalExp)}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col20_schoolWorkingDays > 0 ? calc.row1to5.col20_schoolWorkingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col21_mdmServingDays > 0 ? calc.row1to5.col21_mdmServingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col22_avgBeneficiaries > 0 ? calc.row1to5.col22_avgBeneficiaries : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col23_enrollment > 0 ? calc.row1to5.col23_enrollment : '-'}</td>
-                    <td className="border border-black p-0.5 text-[8px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col24_remarks || '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col14_dalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col15_masalaExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col16_sabjiExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col17_telExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col18_jalawanExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[10px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.row1to5.col19_totalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col20_schoolWorkingDays > 0 ? calc.row1to5.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col21_mdmServingDays > 0 ? calc.row1to5.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col22_avgBeneficiaries > 0 ? calc.row1to5.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col23_enrollment > 0 ? calc.row1to5.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-[8.5px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.row1to5.col24_remarks || '-'}</td>
                   </tr>
 
                   {/* Row 2: कक्षा 6-8 */}
-                  <tr className="hover:bg-slate-50 transition" style={{ height: '42px' }}>
-                    <td className="border border-black px-0.5 py-1 font-bold align-middle">{calc.row6to8.sNo}</td>
-                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.row6to8.className}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col3_annualAllotment) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col4_prevLifting) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col5_currentLifting) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col6_totalLifting) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col7_prevBalanceRice) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col8_totalAvailableRice) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col9_consumedRice) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col8_totalAvailableRice > 0 ? formatValKg(calc.row6to8.col10_closingBalanceRice) : '-'}</td>
+                  <tr className="hover:bg-slate-50 transition" style={{ height: '95px' }}>
+                    <td className="border border-black px-0.5 py-1 text-center font-extrabold text-[11px] align-middle">{calc.row6to8.sNo}</td>
+                    <td className="border border-black px-0.5 py-1 font-bold whitespace-nowrap overflow-hidden text-ellipsis align-middle text-[11px]">{calc.row6to8.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col3_annualAllotment) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col4_prevLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col5_currentLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col6_totalLifting) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col7_prevBalanceRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col8_totalAvailableRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValKg(calc.row6to8.col9_consumedRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col8_totalAvailableRice > 0 ? formatValKg(calc.row6to8.col10_closingBalanceRice) : '-'}</td>
                     <td className="border border-black p-0 font-mono font-bold text-center bg-amber-50/70 overflow-hidden align-middle">
                       {has6to8Data ? (
                         <input
@@ -531,79 +531,79 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                             const val = e.target.value === '' ? null : Math.max(0, parseInt(e.target.value, 10) || 0);
                             onUpdateSchoolDetails?.({ ...schoolDetails, overrideStudentDays6to8: val });
                           }}
-                          className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[9.5px] py-0.5"
+                          className="w-full text-center font-mono font-bold bg-transparent outline-none focus:bg-amber-200 rounded text-[11px] py-1"
                           title="कॉलम 11 (कुल विद्यार्थी-दिवस 6-8): सीधे एडिट करें"
                         />
                       ) : (
-                        <span className="text-slate-600 font-bold">-</span>
+                        <span className="text-slate-600 font-bold text-[11px]">-</span>
                       )}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {has6to8Data && calc.row6to8.col12_pfmsLimitReceived != null && calc.row6to8.col12_pfmsLimitReceived > 0 ? formatINR(calc.row6to8.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {has6to8Data && calc.row6to8.col13_pfmsBalanceAmount != null && calc.row6to8.col13_pfmsBalanceAmount > 0 ? formatINR(calc.row6to8.col13_pfmsBalanceAmount) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col14_dalExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col15_masalaExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col16_sabjiExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col17_telExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col18_jalawanExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col19_totalExp) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col20_schoolWorkingDays > 0 ? calc.row6to8.col20_schoolWorkingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col21_mdmServingDays > 0 ? calc.row6to8.col21_mdmServingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col22_avgBeneficiaries > 0 ? calc.row6to8.col22_avgBeneficiaries : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col23_enrollment > 0 ? calc.row6to8.col23_enrollment : '-'}</td>
-                    <td className="border border-black p-0.5 text-[8px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col24_remarks ? calc.row6to8.col24_remarks : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col14_dalExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col15_masalaExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col16_sabjiExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col17_telExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col18_jalawanExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[10px] bg-blue-50/60 overflow-hidden whitespace-nowrap align-middle">{has6to8Data ? formatValINR(calc.row6to8.col19_totalExp) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col20_schoolWorkingDays > 0 ? calc.row6to8.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col21_mdmServingDays > 0 ? calc.row6to8.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col22_avgBeneficiaries > 0 ? calc.row6to8.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col23_enrollment > 0 ? calc.row6to8.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-[8.5px] font-bold text-center overflow-hidden whitespace-nowrap align-middle">{has6to8Data && calc.row6to8.col24_remarks ? calc.row6to8.col24_remarks : '-'}</td>
                   </tr>
 
                   {/* Row 3: कुल योग */}
-                  <tr className="bg-slate-100 font-extrabold border-t-2 border-black" style={{ height: '44px' }}>
-                    <td className="border border-black px-0.5 py-1 font-bold align-middle text-center">-</td>
-                    <td className="border border-black px-0.5 py-1 font-extrabold whitespace-nowrap overflow-hidden text-ellipsis align-middle">{calc.totalRow.className}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col3_annualAllotment)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col4_prevLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col5_currentLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col6_totalLifting)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col7_prevBalanceRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col8_totalAvailableRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col9_consumedRice)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col8_totalAvailableRice > 0 ? formatValKg(calc.totalRow.col10_closingBalanceRice) : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center bg-amber-100 text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
+                  <tr className="bg-slate-100 font-extrabold border-t-2 border-black" style={{ height: '98px' }}>
+                    <td className="border border-black px-0.5 py-1 font-extrabold align-middle text-center text-[11px]">-</td>
+                    <td className="border border-black px-0.5 py-1 font-black whitespace-nowrap overflow-hidden text-ellipsis align-middle text-[11.5px]">{calc.totalRow.className}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col3_annualAllotment)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col4_prevLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col5_currentLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col6_totalLifting)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col7_prevBalanceRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col8_totalAvailableRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValKg(calc.totalRow.col9_consumedRice)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col8_totalAvailableRice > 0 ? formatValKg(calc.totalRow.col10_closingBalanceRice) : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-black text-center bg-amber-100 text-[11px] overflow-hidden whitespace-nowrap align-middle">
                       {calc.totalRow.col11_beneficiaryDays > 0 ? calc.totalRow.col11_beneficiaryDays : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {calc.totalRow.col12_pfmsLimitReceived != null && calc.totalRow.col12_pfmsLimitReceived > 0 ? formatINR(calc.totalRow.col12_pfmsLimitReceived) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">
                       {calc.totalRow.col13_pfmsBalanceAmount != null && calc.totalRow.col13_pfmsBalanceAmount > 0 ? formatINR(calc.totalRow.col13_pfmsBalanceAmount) : '-'}
                     </td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col14_dalExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col15_masalaExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col16_sabjiExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col17_telExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-bold text-[9px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col18_jalawanExp)}</td>
-                    <td className="border border-black px-0.5 py-1 text-right font-mono font-extrabold text-[9.5px] bg-blue-100 text-black overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col19_totalExp)}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col20_schoolWorkingDays > 0 ? calc.totalRow.col20_schoolWorkingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col21_mdmServingDays > 0 ? calc.totalRow.col21_mdmServingDays : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col22_avgBeneficiaries > 0 ? calc.totalRow.col22_avgBeneficiaries : '-'}</td>
-                    <td className="border border-black px-0.5 py-1 font-mono font-bold text-center overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col23_enrollment > 0 ? calc.totalRow.col23_enrollment : '-'}</td>
-                    <td className="border border-black p-0.5 text-center font-bold text-[8px] align-middle">-</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col14_dalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col15_masalaExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col16_sabjiExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col17_telExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[9.5px] overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col18_jalawanExp)}</td>
+                    <td className="border border-black px-0.5 py-1 text-right font-mono font-black text-[10.5px] bg-blue-100 text-black overflow-hidden whitespace-nowrap align-middle">{formatValINR(calc.totalRow.col19_totalExp)}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-black text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col20_schoolWorkingDays > 0 ? calc.totalRow.col20_schoolWorkingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-black text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col21_mdmServingDays > 0 ? calc.totalRow.col21_mdmServingDays : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-black text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col22_avgBeneficiaries > 0 ? calc.totalRow.col22_avgBeneficiaries : '-'}</td>
+                    <td className="border border-black px-0.5 py-1 font-mono font-black text-center text-[10px] overflow-hidden whitespace-nowrap align-middle">{calc.totalRow.col23_enrollment > 0 ? calc.totalRow.col23_enrollment : '-'}</td>
+                    <td className="border border-black p-0.5 text-center font-bold text-[9px] align-middle">-</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* 4. Official Certification Note & Signatures (Full Page Bottom Anchored) */}
-            <div className="mt-auto pt-4">
-              <div className="text-[10.5px] font-semibold text-black leading-tight mb-3">
-                नोट:- प्रमाणित किया जाता है कि वित्तीय, विद्यालय में संधारित एवं उपलब्ध पोषाहार पंजी के आधार पर तैयार की गई है जो पूर्णरूपेण सही है।
-              </div>
+            {/* 4. Official Certification Note (Directly beneath the 3 expanded rows) */}
+            <div className="mt-2.5 text-[10.5px] font-semibold text-black leading-tight">
+              नोट:- प्रमाणित किया जाता है कि वित्तीय, विद्यालय में संधारित एवं उपलब्ध पोषाहार पंजी के आधार पर तैयार की गई है जो पूर्णरूपेण सही है।
+            </div>
 
-              {/* 5. Official Signatures Section */}
-              <div className="flex justify-between items-end text-[11.5px] font-bold text-black px-6 pb-2">
+            {/* 5. Official Signatures Section (Anchored to bottom of page) */}
+            <div className="mt-auto pt-2 pb-1">
+              <div className="flex justify-between items-end text-[11.5px] font-bold text-black px-6">
                 <div className="text-center">
-                  <div className="h-14"></div>
+                  <div className="h-16"></div>
                   <div>वि० शि० समिति / प्रबंध समिति</div>
                   <div>अध्यक्ष / सचिव का हस्ताक्षर एवं मोहर</div>
                   <div className="mt-1">
@@ -628,7 +628,7 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                 </div>
 
                 <div className="text-center">
-                  <div className="h-14"></div>
+                  <div className="h-16"></div>
                   <div>प्रभारी प्रधानाध्यापक / प्रधानाध्यापक का हस्ताक्षर एवं मोहर</div>
                   <div className="mt-1">
                     <input

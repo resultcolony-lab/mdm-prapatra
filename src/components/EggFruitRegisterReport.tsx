@@ -47,18 +47,32 @@ export const EggFruitRegisterReport: React.FC<Props> = ({
   const fruitRate = eggFruitData.fruitRate != null ? eggFruitData.fruitRate : 5.0;
   const openingBalance = eggFruitData.openingBalanceCashbook != null ? eggFruitData.openingBalanceCashbook : 0.0;
 
-  // Extract Friday and Sunday / Serving dates for Egg & Fruit from DailyEntries
-  // In Bihar MDM, Egg/Fruit is served on Fridays (or Sundays where applicable)
+  // Extract Friday or Sunday Serving dates for Egg & Fruit from DailyEntries
+  // In Bihar MDM:
+  // - General schools (Sunday closed): Egg/Fruit served on Fridays (शुक्रवार)
+  // - Urdu / Madarsa schools (Friday closed): Egg/Fruit served on Sundays (रविवार)
+  const isFridayClose =
+    schoolDetails.weeklyOff === 'friday' ||
+    (dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार' && e.isHoliday).length >= 3 &&
+     dailyEntries.filter((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed).length >= 1) ||
+    dailyEntries.some((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed && ((e.count1to5 || 0) + (e.count6to8 || 0) > 0));
+
   const eggFruitDays = useMemo(() => {
-    // Look for Fridays first (शुक्रवार)
-    const fridays = dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार');
-    if (fridays.length > 0) return fridays;
+    // If Friday-closed school, look for Sundays (रविवार)
+    if (isFridayClose) {
+      const sundays = dailyEntries.filter((e) => e.dayOfWeekHindi === 'रविवार');
+      if (sundays.length > 0) return sundays;
+    } else {
+      // General Sunday-closed school, look for Fridays (शुक्रवार)
+      const fridays = dailyEntries.filter((e) => e.dayOfWeekHindi === 'शुक्रवार');
+      if (fridays.length > 0) return fridays;
+    }
     // Fallback: entries where eggCount or fruitCount > 0
     const withCount = dailyEntries.filter((e) => (e.eggCount && e.eggCount > 0) || (e.fruitCount && e.fruitCount > 0));
     if (withCount.length > 0) return withCount;
     // Otherwise take first 5 working days as sample
     return dailyEntries.slice(0, 5);
-  }, [dailyEntries]);
+  }, [dailyEntries, isFridayClose]);
 
   // Compute 5 Rows Data
   const rows = useMemo(() => {

@@ -59,6 +59,9 @@ export interface SchoolDetails {
   overrideStudentDays1to5?: number | null;  // Col 11 Override
   overrideStudentDays6to8?: number | null;
 
+  // Weekly Off: 'sunday' (General schools) or 'friday' (Urdu/Madarsa schools)
+  weeklyOff?: 'sunday' | 'friday';
+
   // Remarks
   remarks1to5: string;              // Col 24
   remarks6to8: string;
