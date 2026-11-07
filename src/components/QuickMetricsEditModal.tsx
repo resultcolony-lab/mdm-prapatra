@@ -60,13 +60,13 @@ export const QuickMetricsEditModal: React.FC<Props> = ({
   const currentDays1to5 = dailyEntries.reduce((sum, e) => sum + (e.isMealServed && !e.isHoliday ? Number(e.count1to5 || 0) : 0), 0);
   const currentDays6to8 = dailyEntries.reduce((sum, e) => sum + (e.isMealServed && !e.isHoliday ? Number(e.count6to8 || 0) : 0), 0);
 
-  const autoAvg1 = mdmDays > 0 && currentDays1to5 > 0 ? Math.round(currentDays1to5 / mdmDays) : (schoolDetails.enroll1to5 ? Math.round(schoolDetails.enroll1to5 * 0.75) : 95);
-  const autoAvg2 = mdmDays > 0 && currentDays6to8 > 0 ? Math.round(currentDays6to8 / mdmDays) : (schoolDetails.enroll6to8 ? Math.round(schoolDetails.enroll6to8 * 0.75) : 75);
+  const autoAvg1 = mdmDays > 0 && currentDays1to5 > 0 ? Math.round(currentDays1to5 / mdmDays) : 0;
+  const autoAvg2 = mdmDays > 0 && currentDays6to8 > 0 ? Math.round(currentDays6to8 / mdmDays) : 0;
 
-  // Quick Attendance
-  const [avg1to5, setAvg1to5] = useState<string>(String(autoAvg1));
-  const [avg6to8, setAvg6to8] = useState<string>(String(autoAvg2));
-  const [applyAttendanceToAllDays, setApplyAttendanceToAllDays] = useState<boolean>(true);
+  // Quick Attendance - do not prefill fake averages
+  const [avg1to5, setAvg1to5] = useState<string>(autoAvg1 > 0 ? String(autoAvg1) : '');
+  const [avg6to8, setAvg6to8] = useState<string>(autoAvg2 > 0 ? String(autoAvg2) : '');
+  const [applyAttendanceToAllDays, setApplyAttendanceToAllDays] = useState<boolean>(false);
 
   if (!isOpen) return null;
 

@@ -46,7 +46,7 @@ import { Prapatra1FinancialData, EggFruitRegisterData } from './types/mdm';
 
 export default function App() {
   const [data, setData] = useState<MonthData>(() => loadCurrentMonthData());
-  const [activeTab, setActiveTab] = useState<'prapatra' | 'prapatra1' | 'daily' | 'consolidated_pdf' | 'egg_fruit' | 'school' | 'daily_report'>('prapatra');
+  const [activeTab, setActiveTab] = useState<'daily' | 'prapatra' | 'prapatra1' | 'consolidated_pdf' | 'egg_fruit' | 'school' | 'daily_report'>('daily');
   const [savedMonthIds, setSavedMonthIds] = useState<string[]>(() => getSavedMonthIds());
 
   // Modals
@@ -108,7 +108,7 @@ export default function App() {
 
   const handleAddNewMonth = (year: number, monthNum: number, monthName: string) => {
     const id = `${year}-${String(monthNum).padStart(2, '0')}`;
-    const newDaily = generateDailyEntries(year, monthNum, 90, 70);
+    const newDaily = generateDailyEntries(year, monthNum, 0, 0);
     const newMonthData: MonthData = {
       id,
       month: monthName,
@@ -368,19 +368,6 @@ export default function App() {
       <nav aria-label="मोबाइल नेविगेशन" className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 px-1 py-1.5 flex items-center justify-around shadow-2xl backdrop-blur-md bg-white/95 no-print">
         <button
           type="button"
-          onClick={() => setActiveTab('prapatra')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition cursor-pointer min-w-[58px] ${
-            activeTab === 'prapatra'
-              ? 'text-emerald-700 font-bold bg-emerald-50'
-              : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <FileText className="w-4 h-4 mb-0.5" />
-          <span className="text-[10px] leading-tight">प्रपत्र-क</span>
-        </button>
-
-        <button
-          type="button"
           onClick={() => setActiveTab('daily')}
           className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition cursor-pointer min-w-[58px] ${
             activeTab === 'daily'
@@ -390,6 +377,19 @@ export default function App() {
         >
           <Calendar className="w-4 h-4 mb-0.5" />
           <span className="text-[10px] leading-tight">दैनिक MDM</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('prapatra')}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition cursor-pointer min-w-[58px] ${
+            activeTab === 'prapatra'
+              ? 'text-emerald-700 font-bold bg-emerald-50'
+              : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <FileText className="w-4 h-4 mb-0.5" />
+          <span className="text-[10px] leading-tight">प्रपत्र-क</span>
         </button>
 
         <button
@@ -440,7 +440,7 @@ export default function App() {
               बिहार राज्य प्रधानमंत्री पोषण शक्ति निर्माण (PM POSHAN) रिपोर्टिंग एवं स्वचालित लेखांकन प्रणाली
             </div>
             <div className="text-[11.5px] text-slate-500 mt-0.5">
-              प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 संशोधित सरकारी दर अनुपालन • पूर्णियाँ (बिहार)
+              प्रपत्र-क (परिशिष्ट- 11) • 01-05-2025 संशोधित सरकारी दर अनुपालन • बिहार
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">

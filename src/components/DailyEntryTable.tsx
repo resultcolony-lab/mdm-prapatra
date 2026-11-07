@@ -67,12 +67,12 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries, onUpda
      dailyEntries.filter((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed).length >= 1) ||
     dailyEntries.some((e) => (e.dayOfWeekHindi === 'रविवार' || e.isSunday) && e.isMealServed && ((e.count1to5 || 0) + (e.count6to8 || 0) > 0));
 
-  // Defaults based on enrollment (75% of enrollment or defaults 95/75)
-  const default1to5 = schoolDetails.enroll1to5 ? Math.round(schoolDetails.enroll1to5 * 0.75) : 95;
-  const default6to8 = schoolDetails.enroll6to8 ? Math.round(schoolDetails.enroll6to8 * 0.75) : 75;
+  // Average students for quick fill - not prefilled by default
+  const default1to5 = 0;
+  const default6to8 = 0;
 
-  const [bulkClass1, setBulkClass1] = useState<string>(String(default1to5));
-  const [bulkClass2, setBulkClass2] = useState<string>(String(default6to8));
+  const [bulkClass1, setBulkClass1] = useState<string>('');
+  const [bulkClass2, setBulkClass2] = useState<string>('');
   const [includeVariance, setIncludeVariance] = useState<boolean>(true);
   const [includeMenu, setIncludeMenu] = useState<boolean>(true);
   const [includeFridaySpecials, setIncludeFridaySpecials] = useState<boolean>(true);
@@ -105,12 +105,6 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries, onUpda
       item.isHoliday = false;
       item.holidayReason = '';
       item.isMealServed = true;
-      if (!item.count1to5 && !item.count6to8) {
-        item.count1to5 = default1to5;
-        item.count6to8 = default6to8;
-        item.mdmTotalCount = default1to5 + default6to8;
-        item.physicalAttendance = default1to5 + default6to8;
-      }
       const total = (Number(item.count1to5 || 0) + Number(item.count6to8 || 0)) || item.mdmTotalCount || 0;
       const isEggFruitDay = isFridayClose ? isSunday : (isFriday || isSunday);
       if (isEggFruitDay && total > 0) {
@@ -595,6 +589,7 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries, onUpda
                     type="number"
                     value={bulkClass1}
                     onChange={(e) => setBulkClass1(e.target.value)}
+                    placeholder="0"
                     className="w-16 px-1.5 py-0.5 font-mono font-bold text-center border border-amber-300 rounded bg-white text-xs"
                     title="कक्षा 1-5 के दैनिक औसत छात्र"
                   />
@@ -607,6 +602,7 @@ export const DailyEntryTable: React.FC<Props> = ({ data, onUpdateEntries, onUpda
                     type="number"
                     value={bulkClass2}
                     onChange={(e) => setBulkClass2(e.target.value)}
+                    placeholder="0"
                     className="w-16 px-1.5 py-0.5 font-mono font-bold text-center border border-indigo-300 rounded bg-white text-xs"
                     title="कक्षा 6-8 के दैनिक औसत छात्र"
                   />

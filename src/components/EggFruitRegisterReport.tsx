@@ -309,9 +309,6 @@ export const EggFruitRegisterReport: React.FC<Props> = ({
               <CheckCircle2 className="w-3.5 h-3.5 text-amber-700" />
               बिहार PM पोषण अण्डा/मौसमी फल पोषाहार पंजी (PDF प्रारूप)
             </span>
-            <span className="text-xs text-slate-500 font-medium hidden md:inline">
-              (A4 Landscape | जैसा अपलोड किए गए मूल CamScanner PDF में है)
-            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

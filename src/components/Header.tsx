@@ -48,9 +48,9 @@ const MONTH_NAMES = [
 ];
 
 export const TABS_LIST = [
-  { id: 'prapatra', name: '1. प्रपत्र-क (मासिक प्रतिवेदन)', short: 'प्रपत्र-क', icon: FileText, color: 'text-emerald-600' },
-  { id: 'prapatra1', name: '2. प्रपत्र-1 (अनुलग्नक-2 PDF)', short: 'प्रपत्र-1 PDF', icon: FileSpreadsheet, color: 'text-amber-600' },
-  { id: 'daily', name: '3. दैनिक MDM प्रविष्टि (1-31)', short: 'दैनिक प्रविष्टि', icon: Calendar, color: 'text-blue-600' },
+  { id: 'daily', name: '1. दैनिक MDM प्रविष्टि (1-31)', short: 'दैनिक प्रविष्टि', icon: Calendar, color: 'text-blue-600' },
+  { id: 'prapatra', name: '2. प्रपत्र-क (मासिक प्रतिवेदन)', short: 'प्रपत्र-क', icon: FileText, color: 'text-emerald-600' },
+  { id: 'prapatra1', name: '3. प्रपत्र-1 (अनुलग्नक-2 PDF)', short: 'प्रपत्र-1 PDF', icon: FileSpreadsheet, color: 'text-amber-600' },
   { id: 'consolidated_pdf', name: '4. समेकित प्रतिदिन रिपोर्ट (PDF)', short: 'समेकित PDF', icon: FileSpreadsheet, color: 'text-rose-600' },
   { id: 'egg_fruit', name: '5. अण्डा/फल पोषाहार पंजी (PDF)', short: 'अण्डा/फल', icon: Egg, color: 'text-amber-600' },
   { id: 'school', name: '6. विद्यालय विवरणी एवं स्टॉक', short: 'विद्यालय स्टॉक', icon: Building2, color: 'text-indigo-600' },

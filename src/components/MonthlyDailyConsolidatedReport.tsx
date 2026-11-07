@@ -662,7 +662,6 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                               updated[rowIdx] = e.target.value;
                               setTeacherSignatures(updated);
                             }}
-                            placeholder="हस्ताक्षर / नाम"
                             className="bg-transparent text-[10.5px] w-4/5 focus:outline-hidden"
                           />
                         </td>
@@ -676,7 +675,6 @@ export const MonthlyDailyConsolidatedReport: React.FC<Props> = ({
                               updated[rowIdx + 1] = e.target.value;
                               setTeacherSignatures(updated);
                             }}
-                            placeholder="हस्ताक्षर / नाम"
                             className="bg-transparent text-[10.5px] w-4/5 focus:outline-hidden"
                           />
                         </td>
