@@ -131,8 +131,8 @@ export const DailyRegisterReport: React.FC<Props> = ({ data }) => {
             <div>विद्यालय: <span className="underline">{schoolDetails.schoolName}</span></div>
             <div>प्रखंड: <span className="underline">{schoolDetails.blockName}</span></div>
             <div>जिला: <span className="underline">{schoolDetails.districtName}</span></div>
-            <div>माह / वर्ष: <span className="underline">{schoolDetails.month} {schoolDetails.year}</span></div>
-            <div>MIS कोड: <span className="underline font-mono">{schoolDetails.misCode}</span></div>
+            <div>U-DISE: <span className="underline font-mono">{schoolDetails.udiseCode || '---'}</span></div>
+            <div>MIS कोड: <span className="underline font-mono">{schoolDetails.misCode || '---'}</span></div>
           </div>
         </div>
 

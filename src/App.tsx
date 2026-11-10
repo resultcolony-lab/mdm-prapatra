@@ -161,7 +161,10 @@ export default function App() {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                {data.schoolDetails.schoolName || 'विद्यालय का नाम दर्ज करें'} • U-DISE: {data.schoolDetails.misCode || '---'} • प्रखण्ड: {data.schoolDetails.blockName || '---'}
+                {data.schoolDetails.schoolName || 'विद्यालय का नाम दर्ज करें'}
+                {data.schoolDetails.udiseCode ? ` • U-DISE: ${data.schoolDetails.udiseCode}` : ''}
+                {data.schoolDetails.misCode ? ` • MIS: ${data.schoolDetails.misCode}` : ''}
+                {` • प्रखण्ड: ${data.schoolDetails.blockName || '---'}`}
               </p>
             </div>
 

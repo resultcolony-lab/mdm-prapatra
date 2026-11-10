@@ -516,10 +516,11 @@ export const EggFruitRegisterReport: React.FC<Props> = ({
                     <span className="mr-1">:</span>
                     <input
                       type="text"
-                      value={schoolDetails.misCode}
-                      onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, misCode: e.target.value })}
+                      value={schoolDetails.udiseCode || ''}
+                      onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, udiseCode: e.target.value })}
                       placeholder="........................................................................"
                       className="flex-1 font-mono font-bold text-black border-b border-dotted border-black px-1 bg-transparent focus:bg-amber-50 focus:outline-hidden"
+                      title="11 अंकों का U-DISE कोड"
                     />
                   </div>
 
@@ -573,6 +574,19 @@ export const EggFruitRegisterReport: React.FC<Props> = ({
                       onBlur={() => handleTranslateField('sankulName')}
                       placeholder="................................................................"
                       className="flex-1 font-bold text-black border-b border-dotted border-black px-1 bg-transparent focus:bg-amber-50 focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div className="flex items-baseline">
+                    <span className="shrink-0 w-28 font-bold">MIS क्रमांक</span>
+                    <span className="mr-1">:</span>
+                    <input
+                      type="text"
+                      value={schoolDetails.misCode || ''}
+                      onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, misCode: e.target.value })}
+                      placeholder="................................................................"
+                      className="flex-1 font-mono font-bold text-black border-b border-dotted border-black px-1 bg-transparent focus:bg-amber-50 focus:outline-hidden"
+                      title="मध्याह्न भोजन MIS क्रमांक"
                     />
                   </div>
                 </div>

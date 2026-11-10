@@ -77,6 +77,7 @@ export function exportToExcel(data: MonthData): void {
       `माह: ${schoolDetails.month}`,
       `वर्ष: ${schoolDetails.year}`,
       `MIS क्रमांक: ${schoolDetails.misCode}`,
+      `U-DISE कोड: ${schoolDetails.udiseCode || ''}`,
     ],
     [],
     prapatraHeaders,

@@ -279,15 +279,34 @@ export const SchoolDetailsForm: React.FC<Props> = ({ data, onUpdateSchoolDetails
 
           <div>
             <label className="block font-semibold text-slate-700 mb-1">
-              MIS क्रमांक (U-DISE / MIS Code) <span className="text-red-500">*</span>
+              U-DISE कोड (11-Digit U-DISE Code)
             </label>
             <input
               type="text"
-              value={schoolDetails.misCode}
-              onChange={(e) => handleChange('misCode', e.target.value)}
-              placeholder="11 अंकों का U-DISE कोड दर्ज करें"
+              value={schoolDetails.udiseCode || ''}
+              onChange={(e) => handleChange('udiseCode', e.target.value)}
+              placeholder="11 अंकों का U-DISE कोड दर्ज करें (उदा. 10090101501)"
               className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
             />
+            <p className="text-[10px] text-slate-500 mt-1">
+              💡 विद्यालय का 11 अंकों का राष्ट्रीय यू-डाइस कोड
+            </p>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1">
+              MIS क्रमांक (MDM MIS Code) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={schoolDetails.misCode || ''}
+              onChange={(e) => handleChange('misCode', e.target.value)}
+              placeholder="मध्याह्न भोजन MIS क्रमांक दर्ज करें"
+              className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">
+              💡 मध्याह्न भोजन (PM POSHAN) पोर्टल का अलग MIS क्रमांक
+            </p>
           </div>
 
           {/* Weekly Off / School Type Selector */}

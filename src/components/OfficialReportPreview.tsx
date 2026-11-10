@@ -361,8 +361,19 @@ export const OfficialReportPreview: React.FC<Props> = ({ data, onUpdateSchoolDet
                     value={schoolDetails.misCode}
                     onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, misCode: e.target.value })}
                     placeholder=".............."
-                    className="w-32 ml-1 border-b border-dotted border-black px-1 font-mono font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden"
-                    title="MIS / U-DISE कोड दर्ज करें"
+                    className="w-24 ml-1 border-b border-dotted border-black px-1 font-mono font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden"
+                    title="MIS क्रमांक दर्ज करें"
+                  />
+                </div>
+                <div className="flex items-baseline">
+                  <span>U-DISE:-</span>
+                  <input
+                    type="text"
+                    value={schoolDetails.udiseCode || ''}
+                    onChange={(e) => onUpdateSchoolDetails?.({ ...schoolDetails, udiseCode: e.target.value })}
+                    placeholder=".............."
+                    className="w-28 ml-1 border-b border-dotted border-black px-1 font-mono font-bold text-center bg-transparent focus:bg-amber-50 focus:outline-hidden"
+                    title="11 अंकों का U-DISE कोड दर्ज करें"
                   />
                 </div>
               </div>

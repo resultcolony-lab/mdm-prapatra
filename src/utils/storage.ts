@@ -58,6 +58,7 @@ export function getDefaultDemoMonthData(): MonthData {
     year: '2025',
     financialYear: '2025-26',
     misCode: '',
+    udiseCode: '',
     hmName: '',
     smcSecretaryName: '',
     panchayatName: '',

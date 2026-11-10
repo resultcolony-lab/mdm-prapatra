@@ -30,6 +30,7 @@ export interface SchoolDetails {
   year: string;
   financialYear: string;
   misCode: string;
+  udiseCode?: string;
   hmName: string;
   smcSecretaryName: string;
   panchayatName?: string;
